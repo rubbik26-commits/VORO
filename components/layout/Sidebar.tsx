@@ -3,21 +3,39 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import VoroLogo from "@/components/ui/VoroLogo";
 import {
-  LayoutDashboard, FileText, Users, GraduationCap,
-  Wrench, Megaphone, FolderOpen, UserCircle,
-  LifeBuoy, Settings, X, Menu,
+  LayoutDashboard,
+  FileText,
+  Users,
+  GraduationCap,
+  Wrench,
+  Megaphone,
+  FolderOpen,
+  UserCircle,
+  LifeBuoy,
+  Settings,
+  Landmark,
+  UserPlus2,
+  BadgeDollarSign,
+  Users2,
+  X,
+  Menu,
 } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/dashboard",    label: "Dashboard",     icon: LayoutDashboard },
-  { href: "/transactions", label: "Transactions",  icon: FileText },
-  { href: "/leads",        label: "Leads",         icon: Users },
-  { href: "/academy",      label: "Academy",       icon: GraduationCap },
-  { href: "/services",     label: "Services",      icon: Wrench },
-  { href: "/marketing",    label: "Marketing",     icon: Megaphone },
-  { href: "/documents",    label: "Documents",     icon: FolderOpen },
-  { href: "/profile",      label: "Profile",       icon: UserCircle },
+  { href: "/dashboard",     label: "Dashboard",     icon: LayoutDashboard },
+  { href: "/transactions",  label: "Transactions",  icon: FileText },
+  { href: "/leads",         label: "Leads",         icon: Users },
+  { href: "/academy",       label: "Academy",       icon: GraduationCap },
+  { href: "/services",      label: "Services",      icon: Wrench },
+  { href: "/marketing",     label: "Marketing",     icon: Megaphone },
+  { href: "/documents",     label: "Documents",     icon: FolderOpen },
+  { href: "/profile",       label: "Profile",       icon: UserCircle },
+  // Optional modules
+  { href: "/commercial",    label: "Commercial",    icon: Landmark },
+  { href: "/recruiting",    label: "Recruiting",    icon: UserPlus2 },
+  { href: "/revenue-share", label: "Revenue Share", icon: BadgeDollarSign },
+  { href: "/teams",         label: "Teams",         icon: Users2 },
 ];
 
 const bottomItems = [
@@ -29,7 +47,15 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: any }) => {
+  const NavLink = ({
+    href,
+    label,
+    icon: Icon,
+  }: {
+    href: string;
+    label: string;
+    icon: React.ComponentType<{ size?: number }>;
+  }) => {
     const active = pathname.startsWith(href);
     return (
       <Link
@@ -59,14 +85,20 @@ export default function Sidebar() {
         </div>
       </div>
       <nav aria-label="Main navigation" className="flex flex-col gap-1 flex-1">
-        {navItems.map((item) => <NavLink key={item.href} {...item} />)}
+        {navItems.map((item) => (
+          <NavLink key={item.href} {...item} />
+        ))}
       </nav>
       <div className="flex flex-col gap-1 pt-4 border-t border-voro-muted-border">
-        {bottomItems.map((item) => <NavLink key={item.href} {...item} />)}
+        {bottomItems.map((item) => (
+          <NavLink key={item.href} {...item} />
+        ))}
       </div>
       <div className="mt-4 mx-1 px-3 py-3 rounded-xl bg-voro-soft-panel">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-gradient-accent flex items-center justify-center text-white text-xs font-black shrink-0">J</div>
+          <div className="w-7 h-7 rounded-full bg-gradient-accent flex items-center justify-center text-white text-xs font-black shrink-0">
+            J
+          </div>
           <div>
             <div className="text-xs font-bold text-voro-jet">Jordan Mills</div>
             <div className="text-xs text-voro-text-muted">NY License</div>
@@ -78,7 +110,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col w-[220px] xl:w-[240px] border-r border-voro-muted-border bg-white shrink-0 sticky top-0 h-screen overflow-y-auto">
+      <aside className="hidden lg:flex flex-col w-[230px] xl:w-[250px] border-r border-voro-muted-border bg-white shrink-0 sticky top-0 h-screen overflow-y-auto">
         <SidebarContent />
       </aside>
       <button
@@ -90,7 +122,10 @@ export default function Sidebar() {
       </button>
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+          />
           <aside className="relative z-50 w-64 h-full bg-white border-r border-voro-muted-border overflow-y-auto">
             <SidebarContent />
           </aside>
