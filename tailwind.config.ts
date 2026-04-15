@@ -1,25 +1,63 @@
 import type { Config } from "tailwindcss";
+
 const config: Config = {
-  content: ["./pages/**/*.{js,ts,jsx,tsx,mdx}","./components/**/*.{js,ts,jsx,tsx,mdx}","./app/**/*.{js,ts,jsx,tsx,mdx}"],
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
   theme: {
     extend: {
       colors: {
         voro: {
-          purple: "#5E42BC",pink: "#F982FF",indigo: "#271C4F",base: "#f5f4fa",ghost: "#faf9ff",jet: "#1e1b33",
-          "text-muted": "#6b7280","text-faint": "#a0aec0","soft-panel": "#ede9fa","muted-border": "#e5e0f5",
-          success: "#16a34a",warning: "#d97706",danger: "#dc2626",
+          // Core brand
+          purple:     "#5E42BC",
+          pink:       "#F982FF",
+          indigo:     "#271C4F",
+          jet:        "#121216",
+          ghost:      "#F8F7FB",
+          white:      "#FFFFFF",
+          base:       "#F5F4FA",
+          // Semantic
+          success:    "#15A46B",
+          warning:    "#E8A317",
+          danger:     "#D84C63",
+          // UI
+          "muted-border": "#E7E3F2",
+          "soft-panel":   "#F3EFFB",
+          "text-muted":   "#6F6887",
+          "text-faint":   "#B0A8C8",
         },
       },
-      boxShadow: {
-        soft: "0 1px 3px rgba(94,66,188,0.06), 0 4px 12px rgba(94,66,188,0.05)",
-        medium: "0 4px 12px rgba(94,66,188,0.10), 0 12px 32px rgba(94,66,188,0.07)",
-        "glow-sm": "0 4px 16px rgba(94,66,188,0.3)",
-        glow: "0 6px 24px rgba(94,66,188,0.4)",
-        "white-glow": "0 4px 20px rgba(255,255,255,0.3)",
+      borderRadius: {
+        xs:   "10px",
+        sm:   "14px",
+        md:   "18px",
+        lg:   "24px",
+        xl:   "32px",
+        pill: "999px",
+        // keep tailwind defaults available
+        DEFAULT: "14px",
+        "2xl": "18px",
+        "3xl": "24px",
       },
-      fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] },
+      boxShadow: {
+        soft:       "0 10px 30px rgba(39, 28, 79, 0.08)",
+        medium:     "0 20px 50px rgba(39, 28, 79, 0.12)",
+        glow:       "0 14px 34px rgba(94, 66, 188, 0.28)",
+        "glow-sm":  "0 6px 18px rgba(94, 66, 188, 0.22)",
+      },
+      fontFamily: {
+        sans: ["Plus Jakarta Sans", "Inter", "Segoe UI", "sans-serif"],
+      },
+      backgroundImage: {
+        "gradient-primary": "linear-gradient(135deg, #5E42BC 0%, #271C4F 100%)",
+        "gradient-accent":  "linear-gradient(135deg, #5E42BC 0%, #F982FF 100%)",
+        "gradient-soft":    "linear-gradient(180deg, #FFFFFF 0%, #F8F7FB 100%)",
+      },
     },
   },
   plugins: [],
 };
+
 export default config;
