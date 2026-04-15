@@ -36,6 +36,19 @@
     color: #5E42BC;
   }
   .btn-ghost:hover { background: #f0ecfc; }
+  .btn-ghost-icon {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all;
+    color: #5E42BC; background: #F3EFFB;
+  }
+  .btn-ghost-icon:hover { background: #5E42BC; color: #ffffff; }
+  .input {
+    @apply w-full rounded-xl text-sm transition-colors focus:outline-none;
+    background: #F8F7FB; border: 1px solid #E7E3F2; padding: 0.625rem 0.875rem; color: #121216;
+  }
+  .input:focus { border-color: #5E42BC; box-shadow: 0 0 0 3px rgba(94,66,188,0.12); }
+  .input::placeholder { color: #B0A8C8; }
+  select.input { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%236F6887' d='M6 8L2 4h8z'/></svg>"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; }
+  textarea.input { resize: vertical; }
   .section-title { @apply text-base font-bold tracking-tight; color: #1e1b33; }
   .section-body { @apply text-sm; color: #6b7280; }
   .bg-gradient-accent { background: linear-gradient(135deg, #5E42BC 0%, #F982FF 100%); }

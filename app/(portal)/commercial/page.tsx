@@ -1,10 +1,35 @@
+"use client";
+import { useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
 import { services } from "@/data/mock-data";
+import { useToast } from "@/components/ui/Toast";
 import { Building2, Landmark, BriefcaseBusiness } from "lucide-react";
 
 export default function CommercialPage() {
+  const { toast } = useToast();
   const commercialServices = services.filter((s) => s.category === "Commercial");
+  const [form, setForm] = useState({
+    opportunity: "",
+    role: "Buyer rep",
+    details: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!form.opportunity.trim() || !form.details.trim()) {
+      toast("Opportunity and details are required.", "error");
+      return;
+    }
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      toast("Commercial desk request submitted.", "success");
+      setForm({ opportunity: "", role: "Buyer rep", details: "" });
+    }, 600);
+  };
+
   return (
     <>
       <PageHeader
@@ -14,7 +39,7 @@ export default function CommercialPage() {
       />
       <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-6">
         <Card>
-          <div className="section-title mb-1">Active & Upcoming Commercial Files</div>
+          <div className="section-title mb-1">Active &amp; Upcoming Commercial Files</div>
           <div className="section-body mb-4">
             High-level pipeline view for commercial opportunities you are touching.
           </div>
@@ -24,8 +49,12 @@ export default function CommercialPage() {
                 <Building2 size={20} />
               </div>
               <div>
-                <div className="text-sm font-bold text-voro-jet">UrbanCore Capital Group — Bronx Medical Office</div>
-                <div className="text-xs text-voro-text-muted">Buyer · 2211 Grand Concourse, Suite 410 · Bronx, NY</div>
+                <div className="text-sm font-bold text-voro-jet">
+                  UrbanCore Capital Group &mdash; Bronx Medical Office
+                </div>
+                <div className="text-xs text-voro-text-muted">
+                  Buyer · 2211 Grand Concourse, Suite 410 · Bronx, NY
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-voro-text-muted mt-1">
@@ -47,11 +76,19 @@ export default function CommercialPage() {
               </div>
             </div>
           </div>
+          {commercialServices.length > 0 && (
+            <div className="mt-4 rounded-xl border border-dashed border-voro-muted-border p-4 text-xs text-voro-text-muted flex items-start gap-2">
+              <Landmark size={14} className="text-voro-purple mt-0.5" />
+              <span>
+                Partnered with {commercialServices[0].title} &mdash; response {commercialServices[0].eta.toLowerCase()}.
+              </span>
+            </div>
+          )}
         </Card>
         <Card>
           <div className="section-title mb-1">How Commercial Desk Helps</div>
           <div className="section-body mb-4">
-            Use this desk for any non-residential opportunity—office, retail, mixed-use, industrial, development.
+            Use this desk for any non-residential opportunity &mdash; office, retail, mixed-use, industrial, development.
           </div>
           <ul className="text-sm text-voro-text-muted flex flex-col gap-2">
             <li>• Deal strategy, underwriting, and pricing guidance.</li>
@@ -67,14 +104,23 @@ export default function CommercialPage() {
         <div className="section-body mb-4">
           Submit a file and a commercial advisor will respond with next steps.
         </div>
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-voro-text-muted">Property / Opportunity</label>
-            <input className="input" placeholder="Address or brief description" />
+            <input
+              value={form.opportunity}
+              onChange={(e) => setForm((f) => ({ ...f, opportunity: e.target.value }))}
+              className="input"
+              placeholder="Address or brief description"
+            />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-voro-text-muted">Role</label>
-            <select className="input">
+            <select
+              value={form.role}
+              onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+              className="input"
+            >
               <option>Buyer rep</option>
               <option>Seller rep</option>
               <option>Landlord rep</option>
@@ -84,21 +130,45 @@ export default function CommercialPage() {
           <div className="flex flex-col gap-1 md:col-span-2">
             <label className="text-xs font-semibold text-voro-text-muted">What do you need?</label>
             <textarea
+              value={form.details}
+              onChange={(e) => setForm((f) => ({ ...f, details: e.target.value }))}
               className="input min-h-[120px]"
               placeholder="Share context, timing, and what help you need from the commercial desk."
             />
           </div>
           <div className="flex flex-col gap-1 md:col-span-2">
-            <label className="text-xs font-semibold text-voro-text-muted">Upload supporting documents (optional)</label>
-            <div className="rounded-xl border border-dashed border-voro-muted-border px-4 py-3 text-xs text-voro-text-muted bg-voro-ghost">
+            <label className="text-xs font-semibold text-voro-text-muted">
+              Upload supporting documents (optional)
+            </label>
+            <label className="rounded-xl border border-dashed border-voro-muted-border px-4 py-3 text-xs text-voro-text-muted bg-voro-ghost cursor-pointer hover:border-voro-purple transition-colors">
+              <input
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files?.length)
+                    toast(`${e.target.files.length} file(s) attached.`, "success");
+                  e.target.value = "";
+                }}
+              />
               Drag and drop files here or click to browse.
-            </div>
+            </label>
           </div>
           <div className="md:col-span-2 flex justify-end gap-2">
-            <button type="button" className="btn-ghost text-sm">Cancel</button>
-            <button type="submit" className="btn-primary text-sm flex items-center gap-1">
+            <button
+              type="button"
+              className="btn-ghost text-sm"
+              onClick={() => setForm({ opportunity: "", role: "Buyer rep", details: "" })}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary text-sm flex items-center gap-1 disabled:opacity-60"
+            >
               <BriefcaseBusiness size={14} />
-              Submit to Commercial Desk
+              {submitting ? "Submitting…" : "Submit to Commercial Desk"}
             </button>
           </div>
         </form>
