@@ -43,8 +43,8 @@ export default function DashboardPage() {
             Run your business from one place.
           </h1>
           <p className="text-sm text-white/80 mt-3 max-w-lg leading-relaxed">
-            Operate your real estate business from anywhere, anytimetransactions, support, documents, marketing,
-            training, and brokerage servicesall in one workspace.
+            Operate your real estate business from anywhere, anytime — transactions, support, documents, marketing,
+            training, and brokerage services — all in one workspace.
           </p>
           <div className="flex flex-wrap gap-3 mt-6">
             <Link
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                     <div>
                       <div className="text-sm font-semibold text-voro-jet">{d.name}</div>
                       <div className="text-xs text-voro-text-muted">
-                        {d.state}  {d.category}
+                        {d.state}  —  {d.category}
                       </div>
                     </div>
                   </div>
