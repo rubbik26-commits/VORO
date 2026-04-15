@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; scroll-padding-top: 4rem; }
+  body { font-family: "Plus Jakarta Sans", sans-serif; font-size: 0.9375rem; line-height: 1.6; color: #1e1b33; background: #f5f4fa; }
+  h1,h2,h3,h4,h5,h6 { text-wrap: balance; line-height: 1.2; }
+  img,picture,video,canvas,svg { display:block; max-width:100%; height:auto; }
+  input,button,textarea,select { font:inherit; color:inherit; }
+  button { cursor:pointer; background:none; border:none; }
+  table { border-collapse:collapse; width:100%; }
+  :focus-visible { outline: 2px solid #5E42BC; outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: rgba(94,66,188,0.18); }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all;
+    background: linear-gradient(135deg, #5E42BC 0%, #271C4F 100%);
+    box-shadow: 0 2px 8px rgba(94,66,188,0.25);
+  }
+  .btn-primary:hover { box-shadow: 0 4px 16px rgba(94,66,188,0.35); transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all;
+    color: #5E42BC; background: #f0ecfc; border: 1px solid #d6cef6;
+  }
+  .btn-secondary:hover { background: #e8e2fa; }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all;
+    color: #5E42BC;
+  }
+  .btn-ghost:hover { background: #f0ecfc; }
+  .section-title { @apply text-base font-bold tracking-tight; color: #1e1b33; }
+  .section-body { @apply text-sm; color: #6b7280; }
+  .bg-gradient-accent { background: linear-gradient(135deg, #5E42BC 0%, #F982FF 100%); }
+}
