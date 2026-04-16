@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { getServices, createCommercialRequest } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import type { Service } from "@/lib/types";
@@ -196,22 +197,19 @@ export default function CommercialPage() {
         <div className="section-title mb-1">Pipeline Snapshot</div>
         <div className="section-body mb-4">Quick view of commercial activity across your book of business.</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-          <div className="rounded-xl bg-voro-ghost p-4 flex flex-col gap-1">
-            <div className="text-voro-text-muted">Active commercial files</div>
-            <div className="text-2xl font-black text-voro-jet tabular-nums">4</div>
-          </div>
-          <div className="rounded-xl bg-voro-ghost p-4 flex flex-col gap-1">
-            <div className="text-voro-text-muted">Total potential commission</div>
-            <div className="text-2xl font-black text-voro-jet tabular-nums">$186,000</div>
-          </div>
-          <div className="rounded-xl bg-voro-ghost p-4 flex flex-col gap-1">
-            <div className="text-voro-text-muted">Under LOI</div>
-            <div className="text-2xl font-black text-voro-jet tabular-nums">2</div>
-          </div>
-          <div className="rounded-xl bg-voro-ghost p-4 flex flex-col gap-1">
-            <div className="text-voro-text-muted">Closed last 12 months</div>
-            <div className="text-2xl font-black text-voro-jet tabular-nums">3</div>
-          </div>
+          {[
+            { label: "Active commercial files", value: "4" },
+            { label: "Total potential commission", value: "$186,000" },
+            { label: "Under LOI", value: "2" },
+            { label: "Closed last 12 months", value: "3" },
+          ].map((s, i) => (
+            <Card key={s.label} variant="stat" className={`flex flex-col gap-1 animate-fade-in stagger-${i + 1}`}>
+              <div className="text-voro-text-muted">{s.label}</div>
+              <div className="text-2xl font-black text-voro-jet tabular-nums">
+                <AnimatedNumber value={s.value} />
+              </div>
+            </Card>
+          ))}
         </div>
       </Card>
     </>

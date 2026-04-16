@@ -69,8 +69,8 @@ export default function RecruitingPage() {
             value: recruitingLeads.filter((l) => l.status !== "New" && l.status !== "Lost").length.toString(),
           },
           { label: "Onboarded", value: "0" },
-        ].map((k) => (
-          <Card key={k.label} className="flex flex-col gap-2">
+        ].map((k, i) => (
+          <Card key={k.label} variant="stat" className={`flex flex-col gap-2 animate-fade-in stagger-${i + 1}`}>
             <div className="text-xs font-semibold text-voro-text-muted">{k.label}</div>
             <div className="text-3xl font-black text-voro-jet tabular-nums">{k.value}</div>
           </Card>
@@ -86,10 +86,10 @@ export default function RecruitingPage() {
                 No recruiting prospects yet. Add one on the right to start tracking.
               </div>
             )}
-            {recruitingLeads.map((lead) => (
+            {recruitingLeads.map((lead, idx) => (
               <div
                 key={lead.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-4 py-3 hover:border-voro-purple transition-all"
+                className={`flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-4 py-3 hover:border-voro-purple hover:shadow-soft transition-all animate-fade-in stagger-${Math.min(idx + 1, 8)}`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-full bg-gradient-accent flex items-center justify-center text-white text-sm font-bold shrink-0">

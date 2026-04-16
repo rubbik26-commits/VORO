@@ -76,28 +76,17 @@ export default async function TransactionDetailPage({
               />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mt-5">
-              <div className="rounded-xl bg-voro-ghost p-3">
-                <div className="text-voro-text-muted">List Price</div>
-                <div className="text-lg font-black text-voro-jet tabular-nums">
-                  {formatCurrency(transaction.listPrice)}
+              {[
+                { label: "List Price", value: formatCurrency(transaction.listPrice) },
+                { label: "Sale Price", value: transaction.salePrice > 0 ? formatCurrency(transaction.salePrice) : "—" },
+                { label: "Commission", value: formatCurrency(transaction.commission) },
+                { label: "Close Target", value: transaction.closingDate },
+              ].map((s, i) => (
+                <div key={s.label} className={`rounded-xl bg-gradient-to-br from-white to-voro-ghost border border-voro-muted-border p-3 animate-fade-in stagger-${i + 1}`}>
+                  <div className="text-voro-text-muted">{s.label}</div>
+                  <div className="text-lg font-black text-voro-jet tabular-nums">{s.value}</div>
                 </div>
-              </div>
-              <div className="rounded-xl bg-voro-ghost p-3">
-                <div className="text-voro-text-muted">Sale Price</div>
-                <div className="text-lg font-black text-voro-jet tabular-nums">
-                  {transaction.salePrice > 0 ? formatCurrency(transaction.salePrice) : "—"}
-                </div>
-              </div>
-              <div className="rounded-xl bg-voro-ghost p-3">
-                <div className="text-voro-text-muted">Commission</div>
-                <div className="text-lg font-black text-voro-jet tabular-nums">
-                  {formatCurrency(transaction.commission)}
-                </div>
-              </div>
-              <div className="rounded-xl bg-voro-ghost p-3">
-                <div className="text-voro-text-muted">Close Target</div>
-                <div className="text-lg font-black text-voro-jet">{transaction.closingDate}</div>
-              </div>
+              ))}
             </div>
           </Card>
           <Card>
