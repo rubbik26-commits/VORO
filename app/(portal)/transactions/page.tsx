@@ -1,5 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { transactions } from "@/data/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import Card from "@/components/ui/Card";
@@ -35,6 +37,7 @@ function parseCloseDate(s: string) {
 
 export default function TransactionsPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [side, setSide] = useState<SideFilter>("All");
   const [status, setStatus] = useState<StatusFilter>("All");
@@ -77,12 +80,9 @@ export default function TransactionsPage() {
         title="Transactions"
         description="Active deals, milestones, document status, and commission pipeline."
         action={
-          <button
-            className="btn-primary text-sm"
-            onClick={() => toast("Deal intake form coming soon. Connect to real intake API.", "info")}
-          >
+          <Link href="/transactions/new" className="btn-primary text-sm">
             + Submit New Deal
-          </button>
+          </Link>
         }
       />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -257,7 +257,7 @@ export default function TransactionsPage() {
                 </div>
                 <div className="flex gap-2 mt-auto">
                   <button
-                    onClick={() => toast(`Opening ${t.address} file detail (mock).`, "info")}
+                    onClick={() => router.push(`/transactions/${t.id}`)}
                     className="btn-ghost text-sm flex-1"
                   >
                     View File

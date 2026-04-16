@@ -1,10 +1,15 @@
 "use client";
-import { useMemo, useState } from "react";
-import { leads } from "@/data/mock-data";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { leads as seedLeads } from "@/data/mock-data";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Modal from "@/components/ui/Modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
+import { createLead } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import type { Lead } from "@/lib/types";
 import { Phone, Mail, MessageCircle, Search } from "lucide-react";
 
 const sv: Record<string, "default" | "warning" | "success" | "danger" | "neutral"> = {
@@ -27,11 +32,80 @@ const tv: Record<string, string> = {
 const TYPE_OPTIONS = ["All", "Buyer", "Seller", "Investor", "Renter", "Recruit"] as const;
 const STATUS_OPTIONS = ["All", "New", "Contacted", "Active", "Nurturing", "Lost"] as const;
 
+type DraftLead = {
+  name: string;
+  type: Lead["type"];
+  market: string;
+  phone: string;
+  email: string;
+  source: string;
+  notes: string;
+};
+
+const EMPTY_DRAFT: DraftLead = {
+  name: "",
+  type: "Buyer",
+  market: "",
+  phone: "",
+  email: "",
+  source: "",
+  notes: "",
+};
+
 export default function LeadsPage() {
+  return (
+    <Suspense>
+      <LeadsContent />
+    </Suspense>
+  );
+}
+
+function LeadsContent() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<(typeof TYPE_OPTIONS)[number]>("All");
   const [statusFilter, setStatusFilter] = useState<(typeof STATUS_OPTIONS)[number]>("All");
+  const [leads, setLeads] = useState<Lead[]>(seedLeads);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [draft, setDraft] = useState<DraftLead>(EMPTY_DRAFT);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (searchParams?.get("new") === "1") setModalOpen(true);
+  }, [searchParams]);
+
+  const updateDraft = <K extends keyof DraftLead>(key: K, value: DraftLead[K]) =>
+    setDraft((d) => ({ ...d, [key]: value }));
+
+  const handleAddLead = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!draft.name.trim() || !draft.market.trim()) {
+      toast("Name and market are required.", "error");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const created = await createLead({
+        name: draft.name.trim(),
+        type: draft.type,
+        market: draft.market.trim(),
+        phone: draft.phone.trim(),
+        email: draft.email.trim(),
+        source: draft.source.trim() || "Direct",
+        notes: draft.notes.trim(),
+      });
+      setLeads((prev) => [created, ...prev]);
+      track("lead_created", { id: created.id, type: created.type });
+      toast(`${created.name} added to leads.`, "success");
+      setDraft(EMPTY_DRAFT);
+      setModalOpen(false);
+    } catch {
+      toast("Could not add lead. Try again.", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,7 +129,7 @@ export default function LeadsPage() {
         description="Your lead inbox, referrals, and recruiting pipeline."
         action={
           <button
-            onClick={() => toast("Lead intake form coming soon. Wire to CRM API.", "info")}
+            onClick={() => setModalOpen(true)}
             className="btn-primary text-sm"
           >
             + Add Lead
@@ -177,6 +251,110 @@ export default function LeadsPage() {
           </Card>
         ))}
       </div>
+
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Add New Lead"
+        description="Track a prospect through your pipeline."
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="btn-ghost text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="add-lead-form"
+              disabled={submitting}
+              className="btn-primary text-sm disabled:opacity-60"
+            >
+              {submitting ? "Adding…" : "Add Lead"}
+            </button>
+          </>
+        }
+      >
+        <form id="add-lead-form" onSubmit={handleAddLead} className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-voro-text-muted">Name</label>
+              <input
+                value={draft.name}
+                onChange={(e) => updateDraft("name", e.target.value)}
+                className="input"
+                placeholder="Full name"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-voro-text-muted">Type</label>
+              <select
+                value={draft.type}
+                onChange={(e) => updateDraft("type", e.target.value as DraftLead["type"])}
+                className="input"
+              >
+                {["Buyer", "Seller", "Investor", "Renter", "Recruit"].map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-voro-text-muted">Market</label>
+              <input
+                value={draft.market}
+                onChange={(e) => updateDraft("market", e.target.value)}
+                className="input"
+                placeholder="e.g. Brooklyn, NY"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-voro-text-muted">Source</label>
+              <input
+                value={draft.source}
+                onChange={(e) => updateDraft("source", e.target.value)}
+                className="input"
+                placeholder="Zillow, Referral, LinkedIn…"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-voro-text-muted">Phone</label>
+              <input
+                value={draft.phone}
+                onChange={(e) => updateDraft("phone", e.target.value)}
+                className="input"
+                placeholder="(917) 555-0100"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-voro-text-muted">Email</label>
+              <input
+                type="email"
+                value={draft.email}
+                onChange={(e) => updateDraft("email", e.target.value)}
+                className="input"
+                placeholder="name@email.com"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-voro-text-muted">Notes</label>
+            <textarea
+              value={draft.notes}
+              onChange={(e) => updateDraft("notes", e.target.value)}
+              className="input min-h-[80px]"
+              placeholder="Budget, timeline, preferences…"
+            />
+          </div>
+        </form>
+      </Modal>
     </>
   );
 }

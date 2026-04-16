@@ -55,6 +55,15 @@ const config: Config = {
         "gradient-accent":  "linear-gradient(135deg, #5E42BC 0%, #F982FF 100%)",
         "gradient-soft":    "linear-gradient(180deg, #FFFFFF 0%, #F8F7FB 100%)",
       },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: "0", transform: "scale(0.97) translateY(8px)" },
+          to:   { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fadeIn 0.18s ease",
+      },
     },
   },
   plugins: [],

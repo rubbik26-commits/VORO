@@ -7,6 +7,8 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import Badge from "@/components/ui/Badge";
 import PageHeader from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
+import { updateAgentProfile } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import {
   MapPin,
   Phone,
@@ -18,17 +20,50 @@ import {
   Star,
   CheckCircle2,
   Calendar,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export default function ProfilePage() {
   const { toast } = useToast();
   const [bio, setBio] = useState(agent.bio);
+  const [phoneVal, setPhoneVal] = useState(agent.phone);
+  const [emailVal, setEmailVal] = useState(agent.email);
+  const [websiteVal, setWebsiteVal] = useState(agent.website);
+  const [languages, setLanguages] = useState<string[]>([...agent.languages]);
+  const [newLang, setNewLang] = useState("");
   const [specialties, setSpecialties] = useState<string[]>([...agent.specialties]);
   const [newSpecialty, setNewSpecialty] = useState("");
+  const [profilePublic, setProfilePublic] = useState(true);
+  const [saving, setSaving] = useState(false);
   const incomplete = 100 - agent.profileCompleteness;
 
-  const handleSave = () => {
-    toast("Profile changes saved (mock — connect real API to persist).", "success");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateAgentProfile({
+        bio,
+        phone: phoneVal,
+        email: emailVal,
+        website: websiteVal,
+        specialties,
+        languages,
+      });
+      track("profile_saved");
+      toast("Profile changes saved.", "success");
+    } catch {
+      toast("Could not save profile. Try again.", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addLanguage = () => {
+    const v = newLang.trim();
+    if (!v) return;
+    if (languages.includes(v)) { toast("Language already added.", "info"); return; }
+    setLanguages((prev) => [...prev, v]);
+    setNewLang("");
   };
 
   const addSpecialty = () => {
@@ -48,8 +83,8 @@ export default function ProfilePage() {
         title="My Profile"
         description="Public agent profile, specialties, service areas, and bio."
         action={
-          <button onClick={handleSave} className="btn-primary text-sm">
-            Save Changes
+          <button onClick={handleSave} disabled={saving} className="btn-primary text-sm disabled:opacity-60">
+            {saving ? "Saving…" : "Save Changes"}
           </button>
         }
       />
@@ -76,33 +111,43 @@ export default function ProfilePage() {
               <Calendar size={11} className="text-voro-purple" />
               <span>Member since {formatDate(agent.joinDate)}</span>
             </div>
-            <div className="flex flex-col gap-1.5 mt-4 w-full text-xs">
-              <a
-                href={`tel:${agent.phone}`}
-                className="flex items-center gap-2 text-voro-text-muted hover:text-voro-purple transition-colors"
-              >
-                <Phone size={12} className="text-voro-purple" />
-                {agent.phone}
-              </a>
-              <a
-                href={`mailto:${agent.email}`}
-                className="flex items-center gap-2 text-voro-text-muted hover:text-voro-purple transition-colors"
-              >
-                <Mail size={12} className="text-voro-purple" />
-                {agent.email}
-              </a>
-              {agent.website && (
-                <a
-                  href={agent.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-voro-text-muted hover:text-voro-purple transition-colors"
-                >
-                  <Globe size={12} className="text-voro-purple" />
-                  {agent.website.replace(/^https?:\/\//, "")}
-                </a>
-              )}
+            <div className="flex flex-col gap-2 mt-4 w-full text-xs">
+              <div className="flex items-center gap-2">
+                <Phone size={12} className="text-voro-purple shrink-0" />
+                <input
+                  value={phoneVal}
+                  onChange={(e) => setPhoneVal(e.target.value)}
+                  className="input !py-1 text-xs flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail size={12} className="text-voro-purple shrink-0" />
+                <input
+                  value={emailVal}
+                  onChange={(e) => setEmailVal(e.target.value)}
+                  className="input !py-1 text-xs flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Globe size={12} className="text-voro-purple shrink-0" />
+                <input
+                  value={websiteVal}
+                  onChange={(e) => setWebsiteVal(e.target.value)}
+                  className="input !py-1 text-xs flex-1"
+                />
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setProfilePublic((p) => !p);
+                toast(profilePublic ? "Profile hidden from public view." : "Profile visible to public.", "info");
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-voro-purple mt-3 hover:text-voro-indigo transition-colors"
+            >
+              {profilePublic ? <Eye size={13} /> : <EyeOff size={13} />}
+              {profilePublic ? "Public profile" : "Team-only"}
+            </button>
             <div className="flex items-center justify-center gap-3 mt-4">
               {agent.social.instagram && (
                 <a
@@ -243,11 +288,29 @@ export default function ProfilePage() {
           <Card>
             <div className="section-title mb-3">Languages</div>
             <div className="flex flex-wrap gap-2">
-              {agent.languages.map((l) => (
-                <Badge key={l} variant="neutral">
-                  {l}
-                </Badge>
+              {languages.map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setLanguages((prev) => prev.filter((x) => x !== l))}
+                  className="bg-voro-ghost text-voro-jet text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-voro-danger hover:text-white transition-colors"
+                  aria-label={`Remove ${l}`}
+                  title="Click to remove"
+                >
+                  {l} &times;
+                </button>
               ))}
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <input
+                value={newLang}
+                onChange={(e) => setNewLang(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLanguage(); } }}
+                placeholder="Add a language…"
+                className="input flex-1"
+              />
+              <button onClick={addLanguage} className="btn-secondary text-xs">
+                Add
+              </button>
             </div>
           </Card>
         </div>
