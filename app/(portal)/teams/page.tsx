@@ -62,28 +62,23 @@ export default function TeamsPage() {
             </div>
           )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Team members</div>
-              <div className="text-2xl font-black text-voro-jet tabular-nums">{members.length}</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">YTD Team Volume</div>
-              <div className="text-2xl font-black text-voro-jet tabular-nums">$18.4M</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Open deals</div>
-              <div className="text-2xl font-black text-voro-jet tabular-nums">9</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Closings this month</div>
-              <div className="text-2xl font-black text-voro-jet tabular-nums">3</div>
-            </div>
+            {[
+              { label: "Team members", value: members.length.toString() },
+              { label: "YTD Team Volume", value: "$18.4M" },
+              { label: "Open deals", value: "9" },
+              { label: "Closings this month", value: "3" },
+            ].map((s, i) => (
+              <div key={s.label} className={`rounded-xl bg-gradient-to-br from-white to-voro-ghost border border-voro-muted-border p-3 animate-fade-in stagger-${i + 1}`}>
+                <div className="text-voro-text-muted">{s.label}</div>
+                <div className="text-2xl font-black text-voro-jet tabular-nums">{s.value}</div>
+              </div>
+            ))}
           </div>
           <div className="flex flex-col gap-2 mb-4">
             {members.map((m, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-3 py-2"
+                className={`flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-3 py-2 hover:border-voro-purple hover:shadow-soft transition-all animate-fade-in stagger-${Math.min(i + 1, 8)}`}
               >
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-voro-soft-panel flex items-center justify-center text-voro-purple text-xs font-bold">

@@ -166,7 +166,7 @@ export default function Sidebar() {
           />
           <aside
             id="sidebar-nav"
-            className="relative z-50 w-64 h-full bg-white border-r border-voro-muted-border overflow-y-auto animate-slide-in-right"
+            className="relative z-50 w-64 h-full bg-white border-r border-voro-muted-border overflow-y-auto animate-slide-in-left"
           >
             <SidebarContent showClose />
           </aside>

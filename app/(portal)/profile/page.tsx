@@ -300,13 +300,13 @@ export default function ProfilePage() {
             </div>
           </Card>
           <div className="grid grid-cols-2 gap-4">
-            <Card className="flex flex-col gap-2 text-center">
+            <Card variant="stat" className="flex flex-col gap-2 text-center animate-fade-in stagger-1">
               <div className="text-xs uppercase tracking-widest text-voro-text-muted font-semibold">
                 Closed Transactions
               </div>
               <div className="text-3xl font-black text-voro-jet tabular-nums">{agent.closedTransactions}</div>
             </Card>
-            <Card className="flex flex-col gap-2 text-center">
+            <Card variant="stat" className="flex flex-col gap-2 text-center animate-fade-in stagger-2">
               <div className="text-xs uppercase tracking-widest text-voro-text-muted font-semibold">YTD Volume</div>
               <div className="text-3xl font-black text-voro-jet tabular-nums">{agent.ytdVolume}</div>
             </Card>
