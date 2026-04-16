@@ -11,6 +11,7 @@ const config: Config = {
       colors: {
         voro: {
           // Core brand
+          red:        "#D02C30",  // Official VORO brand red (PMS 711 C)
           purple:     "#5E42BC",
           pink:       "#F982FF",
           indigo:     "#271C4F",
@@ -48,7 +49,7 @@ const config: Config = {
         "glow-sm":  "0 6px 18px rgba(94, 66, 188, 0.22)",
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans", "Inter", "Segoe UI", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "Montserrat", "Inter", "Segoe UI", "sans-serif"],
       },
       backgroundImage: {
         "gradient-primary": "linear-gradient(135deg, #5E42BC 0%, #271C4F 100%)",

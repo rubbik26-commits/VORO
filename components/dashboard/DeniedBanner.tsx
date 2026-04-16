@@ -45,7 +45,7 @@ function DeniedBannerInner() {
 
 export default function DeniedBanner() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <DeniedBannerInner />
     </Suspense>
   );

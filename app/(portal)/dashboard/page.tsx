@@ -49,7 +49,7 @@ export default async function DashboardPage() {
       <DeniedBanner />
       <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-5">
         <div
-          className="rounded-2xl p-7 text-white overflow-hidden relative"
+          className="rounded-2xl p-5 md:p-7 text-white overflow-hidden relative"
           style={{ background: brandTokens.gradients.primary }}
         >
           <div
