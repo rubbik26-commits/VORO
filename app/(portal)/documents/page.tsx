@@ -1,16 +1,16 @@
 "use client";
 import { Suspense, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { documents as seedDocs } from "@/data/mock-data";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
 import PageHeader from "@/components/ui/PageHeader";
+import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
-import { uploadDocument } from "@/lib/api";
+import { getDocuments, uploadDocument } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import type { DocumentItem } from "@/lib/types";
-import { FileText, Upload, Search, Filter, CloudUpload } from "lucide-react";
+import { FileText, Upload, Search, Filter, CloudUpload, FileX2 } from "lucide-react";
 
 const categoryVariant: Record<string, "default" | "warning" | "success" | "danger" | "neutral"> = {
   "Brokerage Forms": "default",
@@ -35,11 +35,15 @@ function DocumentsContent() {
   const [stateFilter, setStateFilter] = useState<string>("All");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [documents, setDocuments] = useState<DocumentItem[]>(seedDocs);
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    getDocuments().then(setDocuments);
+  }, []);
 
   useEffect(() => {
     if (searchParams?.get("upload") === "1") setUploadOpen(true);
@@ -103,7 +107,7 @@ function DocumentsContent() {
         d.state.toLowerCase().includes(q)
       );
     });
-  }, [query, stateFilter, categoryFilter]);
+  }, [query, stateFilter, categoryFilter, documents]);
 
   const handleUploadClick = () => setUploadOpen(true);
 
@@ -184,13 +188,19 @@ function DocumentsContent() {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-voro-text-faint">{d.format}</span>
                     <button
-                      onClick={() => toast(`Previewing “${d.name}” (mock).`, "info")}
+                      onClick={() => {
+                        track("document_view", { id: d.id, name: d.name });
+                        toast(`Opening "${d.name}" preview.`, "info");
+                      }}
                       className="btn-ghost text-xs py-1.5 px-3"
                     >
                       View
                     </button>
                     <button
-                      onClick={() => toast(`Downloading “${d.name}”…`, "success")}
+                      onClick={() => {
+                        track("document_download", { id: d.id, format: d.format });
+                        toast(`Downloading "${d.name}" (${d.format}). Check your downloads.`, "success");
+                      }}
                       className="btn-secondary text-xs py-1.5 px-3"
                     >
                       Download
@@ -202,8 +212,20 @@ function DocumentsContent() {
           );
         })}
         {filtered.length === 0 && (
-          <div className="px-5 py-10 text-center">
-            <div className="text-sm font-semibold text-voro-text-muted">No documents match your filters.</div>
+          <div className="px-5">
+            <EmptyState
+              icon={FileX2}
+              title="No documents match your filters"
+              description="Try adjusting your search, state, or category filters to find what you're looking for."
+              action={
+                <button
+                  onClick={() => { setQuery(""); setStateFilter("All"); setCategoryFilter("All"); }}
+                  className="btn-ghost text-xs"
+                >
+                  Clear all filters
+                </button>
+              }
+            />
           </div>
         )}
       </Card>

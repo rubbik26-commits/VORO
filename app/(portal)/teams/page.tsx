@@ -1,8 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import { agent } from "@/data/mock-data";
+import { getAgent } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import type { Agent } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
 import { Users2, UserCircle2 } from "lucide-react";
 
@@ -10,11 +12,16 @@ type Member = { name: string; role: string; notes: string };
 
 export default function TeamsPage() {
   const { toast } = useToast();
+  const [agent, setAgent] = useState<Agent | null>(null);
   const [members, setMembers] = useState<Member[]>([
     { name: "Priya Nair", role: "Showing Agent", notes: "Investor-focused, Queens specialist." },
     { name: "Kevin Thornton", role: "Team Member", notes: "Manhattan listings." },
   ]);
   const [form, setForm] = useState<Member>({ name: "", role: "Team Member", notes: "" });
+
+  useEffect(() => {
+    getAgent().then(setAgent);
+  }, []);
 
   const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,7 +29,8 @@ export default function TeamsPage() {
       toast("Agent name is required.", "error");
       return;
     }
-    setMembers((prev) => [...prev, form]);
+    setMembers((prev) => [...prev, { ...form, name: form.name.trim(), notes: form.notes.trim() }]);
+    track("team_member_added", { name: form.name });
     toast(`${form.name} added to your team list.`, "success");
     setForm({ name: "", role: "Team Member", notes: "" });
   };
@@ -38,17 +46,19 @@ export default function TeamsPage() {
         <Card>
           <div className="section-title mb-1">Your Team</div>
           <div className="section-body mb-4">High-level overview of the team you lead or belong to.</div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-accent flex items-center justify-center text-white text-lg font-black">
-              {agent.firstName[0]}
-            </div>
-            <div>
-              <div className="text-sm font-bold text-voro-jet">
-                {agent.firstName} {agent.lastName}
+          {agent && (
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-accent flex items-center justify-center text-white text-lg font-black">
+                {agent.firstName[0]}
               </div>
-              <div className="text-xs text-voro-text-muted">Team Lead · Greater NYC Metro</div>
+              <div>
+                <div className="text-sm font-bold text-voro-jet">
+                  {agent.firstName} {agent.lastName}
+                </div>
+                <div className="text-xs text-voro-text-muted">Team Lead · Greater NYC Metro</div>
+              </div>
             </div>
-          </div>
+          )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
             <div className="rounded-xl bg-voro-ghost p-3">
               <div className="text-voro-text-muted">Team members</div>
@@ -89,6 +99,7 @@ export default function TeamsPage() {
                 <button
                   onClick={() => {
                     setMembers((prev) => prev.filter((_, idx) => idx !== i));
+                    track("team_member_removed", { name: m.name });
                     toast(`${m.name} removed from team list.`, "info");
                   }}
                   className="text-xs font-semibold text-voro-danger hover:underline"

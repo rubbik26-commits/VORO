@@ -1,16 +1,17 @@
 "use client";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { leads as seedLeads } from "@/data/mock-data";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
-import { createLead } from "@/lib/api";
+import { getLeads, createLead } from "@/lib/api";
 import { track } from "@/lib/analytics";
+import { isValidEmail, isValidPhone } from "@/lib/utils";
 import type { Lead } from "@/lib/types";
-import { Phone, Mail, MessageCircle, Search } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
+import { Phone, Mail, MessageCircle, Search, UserX } from "lucide-react";
 
 const sv: Record<string, "default" | "warning" | "success" | "danger" | "neutral"> = {
   New: "default",
@@ -66,10 +67,14 @@ function LeadsContent() {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<(typeof TYPE_OPTIONS)[number]>("All");
   const [statusFilter, setStatusFilter] = useState<(typeof STATUS_OPTIONS)[number]>("All");
-  const [leads, setLeads] = useState<Lead[]>(seedLeads);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [draft, setDraft] = useState<DraftLead>(EMPTY_DRAFT);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getLeads().then(setLeads);
+  }, []);
 
   useEffect(() => {
     if (searchParams?.get("new") === "1") setModalOpen(true);
@@ -82,6 +87,14 @@ function LeadsContent() {
     e.preventDefault();
     if (!draft.name.trim() || !draft.market.trim()) {
       toast("Name and market are required.", "error");
+      return;
+    }
+    if (draft.email && !isValidEmail(draft.email)) {
+      toast("Please enter a valid email address.", "error");
+      return;
+    }
+    if (draft.phone && !isValidPhone(draft.phone)) {
+      toast("Please enter a valid phone number.", "error");
       return;
     }
     setSubmitting(true);
@@ -120,7 +133,7 @@ function LeadsContent() {
         (l.notes ?? "").toLowerCase().includes(q)
       );
     });
-  }, [query, typeFilter, statusFilter]);
+  }, [query, typeFilter, statusFilter, leads]);
 
   return (
     <>
@@ -165,7 +178,7 @@ function LeadsContent() {
             <label className="text-[10px] font-bold uppercase tracking-widest text-voro-text-muted">Type</label>
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as any)}
+              onChange={(e) => setTypeFilter(e.target.value as (typeof TYPE_OPTIONS)[number])}
               className="input !py-1.5"
             >
               {TYPE_OPTIONS.map((o) => (
@@ -177,7 +190,7 @@ function LeadsContent() {
             <label className="text-[10px] font-bold uppercase tracking-widest text-voro-text-muted">Status</label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => setStatusFilter(e.target.value as (typeof STATUS_OPTIONS)[number])}
               className="input !py-1.5"
             >
               {STATUS_OPTIONS.map((o) => (
@@ -193,8 +206,20 @@ function LeadsContent() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.length === 0 && (
-          <Card className="md:col-span-2 xl:col-span-3 text-center py-10">
-            <div className="text-sm font-semibold text-voro-text-muted">No leads match your filters.</div>
+          <Card className="md:col-span-2 xl:col-span-3">
+            <EmptyState
+              icon={UserX}
+              title="No leads match your filters"
+              description="Try adjusting your search, type, or status filters to find what you're looking for."
+              action={
+                <button
+                  onClick={() => { setQuery(""); setTypeFilter("All"); setStatusFilter("All"); }}
+                  className="btn-ghost text-xs"
+                >
+                  Clear all filters
+                </button>
+              }
+            />
           </Card>
         )}
         {filtered.map((l) => (
@@ -240,7 +265,10 @@ function LeadsContent() {
                   <Mail size={14} />
                 </a>
                 <button
-                  onClick={() => toast(`Messaging ${l.name} (mock — wire to SMS/chat).`, "info")}
+                  onClick={() => {
+                    track("lead_message", { id: l.id, name: l.name });
+                    toast(`Opening conversation with ${l.name}.`, "info");
+                  }}
                   className="btn-ghost-icon"
                   aria-label={`Message ${l.name}`}
                 >

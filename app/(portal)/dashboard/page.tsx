@@ -13,10 +13,11 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import AnnouncementsPanel from "@/components/dashboard/AnnouncementsPanel";
+import DeniedBanner from "@/components/dashboard/DeniedBanner";
 import Link from "next/link";
 import { ArrowRight, FileText, HeartHandshake, Phone, Mail } from "lucide-react";
 
-const statusVariant: Record<string, any> = {
+const statusVariant: Record<string, "default" | "warning" | "danger" | "success" | "neutral"> = {
   "Attorney Review": "default",
   "Inspection Scheduled": "warning",
   "Documents Outstanding": "danger",
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
     ]);
   return (
     <>
+      <DeniedBanner />
       <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-5">
         <div
           className="rounded-2xl p-7 text-white overflow-hidden relative"
@@ -68,7 +70,7 @@ export default async function DashboardPage() {
           </p>
           <div className="flex flex-wrap gap-3 mt-6">
             <Link
-              href="/transactions"
+              href="/transactions/new"
               className="bg-white text-voro-indigo font-bold px-6 py-2.5 rounded-full text-sm hover:bg-voro-ghost transition-colors active:scale-[0.98]"
             >
               Submit a Deal
@@ -201,13 +203,15 @@ export default async function DashboardPage() {
                   {transactions.slice(0, 4).map((t) => (
                     <tr
                       key={t.id}
-                      className="border-b border-voro-muted-border last:border-0 hover:bg-voro-ghost transition-colors"
+                      className="border-b border-voro-muted-border last:border-0 hover:bg-voro-ghost transition-colors cursor-pointer"
                     >
                       <td className="px-5 py-4">
-                        <div className="text-sm font-semibold text-voro-jet">{t.address}</div>
-                        <div className="text-xs text-voro-text-muted">
-                          {t.city}, {t.state}
-                        </div>
+                        <Link href={`/transactions/${t.id}`} className="block">
+                          <div className="text-sm font-semibold text-voro-jet">{t.address}</div>
+                          <div className="text-xs text-voro-text-muted">
+                            {t.city}, {t.state}
+                          </div>
+                        </Link>
                       </td>
                       <td className="px-5 py-4 text-sm text-voro-text-muted">{t.client}</td>
                       <td className="px-5 py-4">

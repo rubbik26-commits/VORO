@@ -25,3 +25,12 @@ export function formatDate(date: string) {
 export function initials(first: string, last: string) {
   return `${first[0]}${last[0]}`.toUpperCase();
 }
+
+export function isValidEmail(v: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+}
+
+export function isValidPhone(v: string): boolean {
+  // At least 7 digits, allowing common punctuation
+  return /[\d]{7,}/.test(v.replace(/[\s()\-+.]/g, ""));
+}

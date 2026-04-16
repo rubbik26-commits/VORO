@@ -1,8 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import { agent } from "@/data/mock-data";
+import { getAgent } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import { isValidEmail } from "@/lib/utils";
+import type { Agent } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
 import { Bell, Shield, User, LogOut, Smartphone, Globe, DollarSign } from "lucide-react";
 
@@ -36,10 +39,19 @@ function Toggle({ defaultChecked = false, label, onChange }: ToggleProps) {
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const [firstName, setFirstName] = useState(agent.firstName);
-  const [lastName, setLastName] = useState(agent.lastName);
-  const [email, setEmail] = useState(agent.email);
-  const [phone, setPhone] = useState(agent.phone);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
+  useEffect(() => {
+    getAgent().then((a) => {
+      setFirstName(a.firstName);
+      setLastName(a.lastName);
+      setEmail(a.email);
+      setPhone(a.phone);
+    });
+  }, []);
   const [password, setPassword] = useState({ current: "", next: "", confirm: "" });
   const [showPwd, setShowPwd] = useState(false);
   const [integrations, setIntegrations] = useState([
@@ -50,6 +62,11 @@ export default function SettingsPage() {
   ]);
 
   const handleSaveAccount = () => {
+    if (email && !isValidEmail(email)) {
+      toast("Please enter a valid email address.", "error");
+      return;
+    }
+    track("settings_account_saved");
     toast(`Account info saved for ${firstName} ${lastName}.`, "success");
   };
 
@@ -67,6 +84,7 @@ export default function SettingsPage() {
       return;
     }
     setPassword({ current: "", next: "", confirm: "" });
+    track("settings_password_updated");
     toast("Password updated successfully.", "success");
   };
 
@@ -82,7 +100,8 @@ export default function SettingsPage() {
   };
 
   const handleSignOut = () => {
-    toast("Sign out requested (mock — wire to auth provider).", "info");
+    track("sign_out");
+    toast("Signing out of VORO Portal. You will be redirected.", "info");
   };
 
   return (

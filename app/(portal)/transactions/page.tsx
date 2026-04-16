@@ -1,14 +1,17 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { transactions } from "@/data/mock-data";
+import { getTransactions } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import type { Transaction } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import PageHeader from "@/components/ui/PageHeader";
+import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
-import { CheckCircle2, Circle, AlertCircle, Search } from "lucide-react";
+import { CheckCircle2, Circle, AlertCircle, Search, FileX2 } from "lucide-react";
 
 const sv: Record<string, "default" | "warning" | "danger" | "success" | "neutral"> = {
   "Attorney Review": "default",
@@ -38,14 +41,19 @@ function parseCloseDate(s: string) {
 export default function TransactionsPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [query, setQuery] = useState("");
   const [side, setSide] = useState<SideFilter>("All");
   const [status, setStatus] = useState<StatusFilter>("All");
   const [sortBy, setSortBy] = useState<SortKey>("closing");
 
+  useEffect(() => {
+    getTransactions().then(setTransactions);
+  }, []);
+
   const uniqueStatuses = useMemo(
     () => ["All", ...Array.from(new Set(transactions.map((t) => t.status)))],
-    [],
+    [transactions],
   );
 
   const filtered = useMemo(() => {
@@ -157,18 +165,20 @@ export default function TransactionsPage() {
 
       <div className="flex flex-col gap-5">
         {filtered.length === 0 && (
-          <Card className="text-center py-10">
-            <div className="text-sm font-semibold text-voro-text-muted">No transactions match your filters.</div>
-            <button
-              onClick={() => {
-                setQuery("");
-                setSide("All");
-                setStatus("All");
-              }}
-              className="btn-ghost text-xs mt-3"
-            >
-              Clear filters
-            </button>
+          <Card>
+            <EmptyState
+              icon={FileX2}
+              title="No transactions match your filters"
+              description="Try adjusting your search, side, or status filters to find what you're looking for."
+              action={
+                <button
+                  onClick={() => { setQuery(""); setSide("All"); setStatus("All"); }}
+                  className="btn-ghost text-xs"
+                >
+                  Clear all filters
+                </button>
+              }
+            />
           </Card>
         )}
         {filtered.map((t) => (
@@ -257,20 +267,24 @@ export default function TransactionsPage() {
                 </div>
                 <div className="flex gap-2 mt-auto">
                   <button
-                    onClick={() => router.push(`/transactions/${t.id}`)}
+                    onClick={() => {
+                      track("transaction_view", { id: t.id });
+                      router.push(`/transactions/${t.id}`);
+                    }}
                     className="btn-ghost text-sm flex-1"
                   >
                     View File
                   </button>
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      track("transaction_upload_docs", { id: t.id, missing: t.missingDocs.length });
                       toast(
                         t.missingDocs.length > 0
                           ? `Upload flow opened for ${t.missingDocs.length} missing document(s).`
                           : "All documents complete for this file.",
                         t.missingDocs.length > 0 ? "info" : "success",
-                      )
-                    }
+                      );
+                    }}
                     className="btn-primary text-sm flex-1"
                   >
                     {t.missingDocs.length > 0 ? "Upload Missing Docs" : "All Docs Complete"}

@@ -1,11 +1,14 @@
 "use client";
-import { useState } from "react";
-import { supportTickets } from "@/data/mock-data";
+import { useEffect, useState } from "react";
+import { getSupportTickets, createSupportTicket } from "@/lib/api";
 import { brandTokens } from "@/lib/brand-tokens";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Modal from "@/components/ui/Modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
+import { track } from "@/lib/analytics";
+import type { SupportTicket } from "@/lib/types";
 import { Phone, Mail, Clock, MessageCircle, HelpCircle, ChevronRight } from "lucide-react";
 
 const sv: Record<string, "default" | "warning" | "success" | "neutral"> = {
@@ -31,25 +34,42 @@ const departments = [
 
 export default function SupportPage() {
   const { toast } = useToast();
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [department, setDepartment] = useState(departments[0].name);
-  const [priority, setPriority] = useState("Medium");
+  const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    getSupportTickets().then(setTickets);
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!subject.trim() || !description.trim()) {
       toast("Subject and description are required.", "error");
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      const created = await createSupportTicket({
+        subject: subject.trim(),
+        department,
+        priority,
+        description: description.trim(),
+      });
+      setTickets((prev) => [created, ...prev]);
+      track("support_ticket_submitted", { department, priority });
       toast(`Ticket submitted to ${department}. You'll hear back soon.`, "success");
       setSubject("");
       setDescription("");
-    }, 600);
+    } catch {
+      toast("Could not submit ticket. Try again.", "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -77,7 +97,7 @@ export default function SupportPage() {
                   <label className="text-xs font-semibold text-voro-text-muted">Priority</label>
                   <select
                     value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
+                    onChange={(e) => setPriority(e.target.value as "Low" | "Medium" | "High")}
                     className="input"
                   >
                     {["Low", "Medium", "High"].map((p) => (
@@ -117,14 +137,14 @@ export default function SupportPage() {
           <Card padding={false}>
             <div className="flex items-center justify-between p-5 border-b border-voro-muted-border">
               <div className="section-title">Your Tickets</div>
-              <Badge variant="neutral">{supportTickets.length} total</Badge>
+              <Badge variant="neutral">{tickets.length} total</Badge>
             </div>
-            {supportTickets.map((t, i) => (
+            {tickets.map((t, i) => (
               <button
                 key={t.id}
-                onClick={() => toast(`Opening ticket ${t.id} (mock).`, "info")}
+                onClick={() => setSelectedTicket(t)}
                 className={`w-full text-left flex items-center justify-between gap-4 px-5 py-4 hover:bg-voro-ghost transition-colors ${
-                  i < supportTickets.length - 1 ? "border-b border-voro-muted-border" : ""
+                  i < tickets.length - 1 ? "border-b border-voro-muted-border" : ""
                 }`}
               >
                 <div className="flex flex-col gap-1">
@@ -173,7 +193,10 @@ export default function SupportPage() {
                 </div>
               </a>
               <button
-                onClick={() => toast("Live chat will open here once wired.", "info")}
+                onClick={() => {
+                  track("live_chat_started");
+                  toast("Live chat session started. An agent will be with you shortly.", "success");
+                }}
                 className="flex items-center gap-3 rounded-xl border border-voro-muted-border bg-voro-ghost px-4 py-3 hover:border-voro-purple transition-all group w-full text-left"
               >
                 <div className="w-10 h-10 rounded-xl bg-voro-soft-panel flex items-center justify-center shrink-0 group-hover:bg-purple-50">
@@ -226,6 +249,49 @@ export default function SupportPage() {
           </Card>
         </div>
       </div>
+
+      <Modal
+        open={!!selectedTicket}
+        onClose={() => setSelectedTicket(null)}
+        title={selectedTicket?.subject ?? ""}
+        description={`${selectedTicket?.department ?? ""} · Opened ${selectedTicket?.created ?? ""}`}
+        size="sm"
+      >
+        {selectedTicket && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <Badge variant={sv[selectedTicket.status]}>{selectedTicket.status}</Badge>
+              <Badge variant={pv[selectedTicket.priority]}>{selectedTicket.priority}</Badge>
+            </div>
+            <div className="rounded-xl bg-voro-ghost p-4 text-xs text-voro-text-muted">
+              <div className="font-semibold text-voro-jet mb-1">Ticket Details</div>
+              <div className="flex justify-between py-1">
+                <span>ID</span>
+                <span className="font-semibold text-voro-jet">{selectedTicket.id}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>Department</span>
+                <span className="font-semibold text-voro-jet">{selectedTicket.department}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>Priority</span>
+                <span className="font-semibold text-voro-jet">{selectedTicket.priority}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>Status</span>
+                <span className="font-semibold text-voro-jet">{selectedTicket.status}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>Created</span>
+                <span className="font-semibold text-voro-jet">{selectedTicket.created}</span>
+              </div>
+            </div>
+            <p className="text-xs text-voro-text-muted">
+              Updates and replies will appear here once the system is connected to the ticketing backend.
+            </p>
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

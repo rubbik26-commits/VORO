@@ -1,20 +1,28 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import { services } from "@/data/mock-data";
+import { getServices } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import type { Service } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
 import { Building2, Landmark, BriefcaseBusiness } from "lucide-react";
 
 export default function CommercialPage() {
   const { toast } = useToast();
-  const commercialServices = services.filter((s) => s.category === "Commercial");
+  const [allServices, setAllServices] = useState<Service[]>([]);
   const [form, setForm] = useState({
     opportunity: "",
     role: "Buyer rep",
     details: "",
   });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getServices().then(setAllServices);
+  }, []);
+
+  const commercialServices = useMemo(() => allServices.filter((s) => s.category === "Commercial"), [allServices]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,6 +33,7 @@ export default function CommercialPage() {
     setSubmitting(true);
     setTimeout(() => {
       setSubmitting(false);
+      track("commercial_request_submitted", { opportunity: form.opportunity, role: form.role });
       toast("Commercial desk request submitted.", "success");
       setForm({ opportunity: "", role: "Buyer rep", details: "" });
     }, 600);
