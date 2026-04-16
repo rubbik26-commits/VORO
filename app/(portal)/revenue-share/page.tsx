@@ -1,9 +1,12 @@
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import { kpis } from "@/data/mock-data";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { canAccess, isRoleGatingEnabled } from "@/lib/auth";
+import { ArrowUpRight, ArrowDownRight, ShieldAlert, Lock } from "lucide-react";
+import Link from "next/link";
 
 export default function RevenueSharePage() {
+  const gated = isRoleGatingEnabled() && !canAccess("revenue_share");
+
   return (
     <>
       <PageHeader
@@ -11,6 +14,18 @@ export default function RevenueSharePage() {
         eyebrow="Optional Module"
         description="High-level view of your downline, production, and revenue share earnings."
       />
+      {gated && (
+        <Card className="flex items-start gap-3 border-voro-danger/30 bg-red-50/40">
+          <Lock size={18} className="text-voro-danger mt-0.5 shrink-0" />
+          <div>
+            <div className="text-sm font-bold text-voro-jet">Access Restricted</div>
+            <p className="text-xs text-voro-text-muted mt-1">
+              Revenue share data is only available to team leads, brokers, and admins.
+              Contact your broker or visit <Link href="/support" className="text-voro-purple font-semibold">Support</Link> for access.
+            </p>
+          </div>
+        </Card>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card className="flex flex-col gap-2">
           <div className="text-xs font-semibold text-voro-text-muted">MTD Revenue Share</div>

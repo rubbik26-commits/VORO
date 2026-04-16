@@ -1,11 +1,16 @@
 "use client";
-import { useMemo, useRef, useState } from "react";
-import { documents } from "@/data/mock-data";
+import { Suspense, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { documents as seedDocs } from "@/data/mock-data";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Modal from "@/components/ui/Modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
-import { FileText, Upload, Search, Filter } from "lucide-react";
+import { uploadDocument } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import type { DocumentItem } from "@/lib/types";
+import { FileText, Upload, Search, Filter, CloudUpload } from "lucide-react";
 
 const categoryVariant: Record<string, "default" | "warning" | "success" | "danger" | "neutral"> = {
   "Brokerage Forms": "default",
@@ -16,16 +21,74 @@ const categoryVariant: Record<string, "default" | "warning" | "success" | "dange
 };
 
 export default function DocumentsPage() {
+  return (
+    <Suspense>
+      <DocumentsContent />
+    </Suspense>
+  );
+}
+
+function DocumentsContent() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [stateFilter, setStateFilter] = useState<string>("All");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [documents, setDocuments] = useState<DocumentItem[]>(seedDocs);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
 
-  const categories = useMemo(() => Array.from(new Set(documents.map((d) => d.category))), []);
+  useEffect(() => {
+    if (searchParams?.get("upload") === "1") setUploadOpen(true);
+  }, [searchParams]);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      const dropped = Array.from(e.dataTransfer.files);
+      if (dropped.length) setUploadFiles((prev) => [...prev, ...dropped]);
+    },
+    [],
+  );
+
+  const handleUploadSubmit = async () => {
+    if (uploadFiles.length === 0) {
+      toast("Select at least one file.", "error");
+      return;
+    }
+    setUploading(true);
+    try {
+      const results: DocumentItem[] = [];
+      for (const f of uploadFiles) {
+        const ext = f.name.split(".").pop()?.toUpperCase() ?? "PDF";
+        const created = await uploadDocument({
+          name: f.name,
+          category: "Uploads",
+          state: "NY",
+          format: ext as DocumentItem["format"],
+        });
+        results.push(created);
+      }
+      setDocuments((prev) => [...results, ...prev]);
+      track("document_uploaded", { count: results.length });
+      toast(`${results.length} file${results.length > 1 ? "s" : ""} uploaded.`, "success");
+      setUploadFiles([]);
+      setUploadOpen(false);
+    } catch {
+      toast("Upload failed. Try again.", "error");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const categories = useMemo(() => Array.from(new Set(documents.map((d) => d.category))), [documents]);
   const states = useMemo(
     () => ["All", ...Array.from(new Set(documents.map((d) => d.state)))],
-    [],
+    [documents],
   );
 
   const filtered = useMemo(() => {
@@ -42,14 +105,7 @@ export default function DocumentsPage() {
     });
   }, [query, stateFilter, categoryFilter]);
 
-  const handleUploadClick = () => fileInputRef.current?.click();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    toast(`Uploaded ${files.length} file${files.length > 1 ? "s" : ""} (mock — wire to storage).`, "success");
-    e.target.value = "";
-  };
+  const handleUploadClick = () => setUploadOpen(true);
 
   const visibleCategories = categoryFilter === "All" ? categories : [categoryFilter];
 
@@ -59,23 +115,13 @@ export default function DocumentsPage() {
         title="Documents"
         description="Forms, compliance docs, templates, and your uploads."
         action={
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              className="hidden"
-              aria-hidden="true"
-            />
-            <button
-              onClick={handleUploadClick}
-              className="btn-primary text-sm flex items-center gap-2"
-            >
-              <Upload size={15} />
-              Upload Document
-            </button>
-          </>
+          <button
+            onClick={handleUploadClick}
+            className="btn-primary text-sm flex items-center gap-2"
+          >
+            <Upload size={15} />
+            Upload Document
+          </button>
         }
       />
       <Card padding={false}>
@@ -161,6 +207,75 @@ export default function DocumentsPage() {
           </div>
         )}
       </Card>
+
+      <Modal
+        open={uploadOpen}
+        onClose={() => { setUploadOpen(false); setUploadFiles([]); }}
+        title="Upload Documents"
+        description="Drag files or browse to upload."
+        footer={
+          <>
+            <button type="button" onClick={() => { setUploadOpen(false); setUploadFiles([]); }} className="btn-ghost text-sm">
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleUploadSubmit}
+              disabled={uploading || uploadFiles.length === 0}
+              className="btn-primary text-sm disabled:opacity-60 flex items-center gap-1.5"
+            >
+              <Upload size={14} />
+              {uploading ? "Uploading…" : `Upload ${uploadFiles.length} file${uploadFiles.length !== 1 ? "s" : ""}`}
+            </button>
+          </>
+        }
+      >
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+          className={`rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
+            dragging
+              ? "border-voro-purple bg-purple-50/40"
+              : "border-voro-muted-border bg-voro-ghost"
+          }`}
+        >
+          <CloudUpload size={32} className="mx-auto text-voro-purple mb-2" />
+          <p className="text-sm font-semibold text-voro-jet">Drag & drop files here</p>
+          <p className="text-xs text-voro-text-muted mt-1">or click below to browse</p>
+          <label className="inline-block mt-3 btn-secondary text-xs cursor-pointer">
+            Browse files
+            <input
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files) setUploadFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+        {uploadFiles.length > 0 && (
+          <div className="mt-4 flex flex-col gap-2">
+            {uploadFiles.map((f, i) => (
+              <div key={`${f.name}-${i}`} className="flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-3 py-2 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileText size={14} className="text-voro-purple shrink-0" />
+                  <span className="truncate text-voro-jet font-semibold">{f.name}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUploadFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                  className="text-voro-danger font-semibold hover:underline shrink-0"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

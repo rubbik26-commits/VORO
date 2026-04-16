@@ -1,9 +1,18 @@
-import { agent, kpis, transactions, announcements, services, academy, documents } from "@/data/mock-data";
+import {
+  getAgent,
+  getKpis,
+  getTransactions,
+  getServices,
+  getAcademySessions,
+  getDocuments,
+} from "@/lib/api";
+import { fetchAnnouncements, fetchFeaturedService } from "@/lib/cms";
 import { brandTokens } from "@/lib/brand-tokens";
 import { formatCurrency } from "@/lib/utils";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
+import AnnouncementsPanel from "@/components/dashboard/AnnouncementsPanel";
 import Link from "next/link";
 import { ArrowRight, FileText, HeartHandshake, Phone, Mail } from "lucide-react";
 
@@ -14,7 +23,7 @@ const statusVariant: Record<string, any> = {
   "Clear to Close": "success",
 };
 const quickActions = [
-  { label: "Submit a Deal", href: "/transactions" },
+  { label: "Submit a Deal", href: "/transactions/new" },
   { label: "Request Title Support", href: "/services" },
   { label: "Insurance Quote", href: "/services" },
   { label: "Upload Documents", href: "/documents" },
@@ -22,7 +31,18 @@ const quickActions = [
   { label: "Contact Support", href: "/support" },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [agent, kpis, transactions, announcements, services, academy, documents, featuredService] =
+    await Promise.all([
+      getAgent(),
+      getKpis(),
+      getTransactions(),
+      fetchAnnouncements(),
+      getServices(),
+      getAcademySessions(),
+      getDocuments(),
+      fetchFeaturedService(),
+    ]);
   return (
     <>
       <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-5">
@@ -68,9 +88,11 @@ export default function DashboardPage() {
                 <div className="text-xs uppercase tracking-widest text-voro-text-muted font-semibold">
                   Featured Service
                 </div>
-                <div className="text-lg font-bold text-voro-jet mt-1">Lending Support</div>
+                <div className="text-lg font-bold text-voro-jet mt-1">
+                  {featuredService?.title ?? "Lending Support"}
+                </div>
                 <p className="text-sm text-voro-text-muted mt-1">
-                  Deal strategy, financing support, and investor scenarios.
+                  {featuredService?.description ?? "Deal strategy, financing support, and investor scenarios."}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-voro-soft-panel flex items-center justify-center shrink-0">
@@ -78,7 +100,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <Link href="/services" className="btn-primary text-center text-sm mt-1">
-              Request Lending Help
+              {featuredService?.cta ?? "Request Lending Help"}
             </Link>
           </Card>
           <Card>
@@ -265,21 +287,7 @@ export default function DashboardPage() {
           <Card>
             <div className="section-title mb-1">Announcements</div>
             <div className="section-body mb-4">Updates from operations, marketing, compliance.</div>
-            <div className="flex flex-col gap-3">
-              {announcements.map((a) => (
-                <div
-                  key={a.id}
-                  className="rounded-xl border border-voro-muted-border p-4 hover:border-voro-purple transition-all"
-                >
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <Badge variant="purple">{a.category}</Badge>
-                    <button className="text-xs font-semibold text-voro-purple">{a.cta}</button>
-                  </div>
-                  <div className="text-sm font-bold text-voro-jet">{a.title}</div>
-                  <p className="text-xs text-voro-text-muted mt-1 leading-relaxed">{a.body}</p>
-                </div>
-              ))}
-            </div>
+            <AnnouncementsPanel items={announcements} />
           </Card>
           <Card>
             <div className="section-title mb-1">Academy</div>

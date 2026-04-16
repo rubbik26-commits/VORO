@@ -4,7 +4,7 @@ import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
 import { agent } from "@/data/mock-data";
 import { useToast } from "@/components/ui/Toast";
-import { Bell, Shield, User, LogOut, Smartphone, Globe } from "lucide-react";
+import { Bell, Shield, User, LogOut, Smartphone, Globe, DollarSign } from "lucide-react";
 
 type ToggleProps = {
   defaultChecked?: boolean;
@@ -256,6 +256,52 @@ export default function SettingsPage() {
               Sign Out of VORO Portal
             </button>
           </div>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <DollarSign size={16} className="text-voro-purple" />
+            <div className="section-title">Compensation &amp; Plan</div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">Current Plan</div>
+              <div className="text-lg font-black text-voro-jet">VORO Pro</div>
+            </div>
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">Commission Split</div>
+              <div className="text-lg font-black text-voro-jet">100%</div>
+            </div>
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">Transaction Fee</div>
+              <div className="text-lg font-black text-voro-jet">$399</div>
+            </div>
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">Annual Cap</div>
+              <div className="text-lg font-black text-voro-jet">$6,000</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">YTD Fees Paid</div>
+              <div className="text-lg font-black text-voro-jet tabular-nums">$3,192</div>
+            </div>
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">Remaining to Cap</div>
+              <div className="text-lg font-black text-voro-success tabular-nums">$2,808</div>
+            </div>
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">Cap Anniversary</div>
+              <div className="text-lg font-black text-voro-jet">Mar 15, 2027</div>
+            </div>
+            <div className="rounded-xl bg-voro-ghost p-3">
+              <div className="text-voro-text-muted">E&amp;O Coverage</div>
+              <div className="text-lg font-black text-voro-success">Active</div>
+            </div>
+          </div>
+          <p className="text-xs text-voro-text-muted">
+            Compensation details are for reference only. Actual commission plans and caps are governed by your
+            Independent Contractor Agreement. Contact <span className="font-semibold text-voro-purple">Accounting</span> for disputes.
+          </p>
         </Card>
         <Card>
           <div className="section-title mb-1">Why VORO</div>
