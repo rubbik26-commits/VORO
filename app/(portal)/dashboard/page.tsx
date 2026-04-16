@@ -74,7 +74,7 @@ export default async function DashboardPage() {
             style={{ background: brandTokens.gradients.glow }}
           />
           <div className="mb-4">
-            <VoroLogo width={120} mono />
+            <VoroLogo width={160} mono />
           </div>
           <span className="inline-flex border border-white/20 bg-white/10 rounded-full px-3 py-1 text-xs font-semibold tracking-widest text-white/80 uppercase">
             Real Estate Cloud Broker

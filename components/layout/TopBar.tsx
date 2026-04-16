@@ -12,7 +12,7 @@ export default function TopBar() {
   const agent = getCurrentAgent();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-voro-muted-border bg-white/90 backdrop-blur-sm px-5 md:px-8 h-16 flex items-center gap-4">
+    <header className="sticky top-0 z-30 border-b border-voro-muted-border bg-white/90 backdrop-blur-sm pl-16 pr-5 lg:px-8 h-16 flex items-center gap-4">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-voro-purple text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
@@ -21,7 +21,7 @@ export default function TopBar() {
       </a>
       {/* VORO logo visible on mobile (sidebar is hidden on small screens) */}
       <Link href="/dashboard" className="lg:hidden shrink-0" aria-label="VORO Home">
-        <VoroLogo width={80} />
+        <VoroLogo width={100} />
       </Link>
       <GlobalSearch />
       <div className="flex items-center gap-2 ml-auto shrink-0">
