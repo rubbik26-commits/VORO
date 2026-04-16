@@ -68,6 +68,10 @@ const config: Config = {
           from: { opacity: "0", transform: "translateX(20px)" },
           to:   { opacity: "1", transform: "translateX(0)" },
         },
+        slideInLeft: {
+          from: { opacity: "0", transform: "translateX(-100%)" },
+          to:   { opacity: "1", transform: "translateX(0)" },
+        },
         slideInUp: {
           from: { opacity: "0", transform: "translateY(12px)" },
           to:   { opacity: "1", transform: "translateY(0)" },
@@ -99,6 +103,7 @@ const config: Config = {
       animation: {
         "fade-in":       "fadeIn 0.18s ease",
         "slide-in-right":"slideInRight 0.25s ease-out",
+        "slide-in-left": "slideInLeft 0.25s ease-out",
         "slide-in-up":   "slideInUp 0.3s ease-out",
         "scale-in":      "scaleIn 0.2s ease-out",
         "shimmer":       "shimmer 2s infinite linear",

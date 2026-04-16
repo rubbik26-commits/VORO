@@ -294,40 +294,30 @@ export default function SettingsPage() {
             <div className="section-title">Compensation &amp; Plan</div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Current Plan</div>
-              <div className="text-lg font-black text-voro-jet">VORO Pro</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Commission Split</div>
-              <div className="text-lg font-black text-voro-jet">100%</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Transaction Fee</div>
-              <div className="text-lg font-black text-voro-jet">$399</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Annual Cap</div>
-              <div className="text-lg font-black text-voro-jet">$6,000</div>
-            </div>
+            {[
+              { label: "Current Plan", value: "VORO Pro", color: "text-voro-jet" },
+              { label: "Commission Split", value: "100%", color: "text-voro-jet" },
+              { label: "Transaction Fee", value: "$399", color: "text-voro-jet" },
+              { label: "Annual Cap", value: "$6,000", color: "text-voro-jet" },
+            ].map((s, i) => (
+              <div key={s.label} className={`rounded-xl bg-gradient-to-br from-white to-voro-ghost border border-voro-muted-border p-3 animate-fade-in stagger-${i + 1}`}>
+                <div className="text-voro-text-muted">{s.label}</div>
+                <div className={`text-lg font-black ${s.color}`}>{s.value}</div>
+              </div>
+            ))}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">YTD Fees Paid</div>
-              <div className="text-lg font-black text-voro-jet tabular-nums">$3,192</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Remaining to Cap</div>
-              <div className="text-lg font-black text-voro-success tabular-nums">$2,808</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Cap Anniversary</div>
-              <div className="text-lg font-black text-voro-jet">Mar 15, 2027</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">E&amp;O Coverage</div>
-              <div className="text-lg font-black text-voro-success">Active</div>
-            </div>
+            {[
+              { label: "YTD Fees Paid", value: "$3,192", color: "text-voro-jet" },
+              { label: "Remaining to Cap", value: "$2,808", color: "text-voro-success" },
+              { label: "Cap Anniversary", value: "Mar 15, 2027", color: "text-voro-jet" },
+              { label: "E&O Coverage", value: "Active", color: "text-voro-success" },
+            ].map((s, i) => (
+              <div key={s.label} className={`rounded-xl bg-gradient-to-br from-white to-voro-ghost border border-voro-muted-border p-3 animate-fade-in stagger-${i + 5}`}>
+                <div className="text-voro-text-muted">{s.label}</div>
+                <div className={`text-lg font-black tabular-nums ${s.color}`}>{s.value}</div>
+              </div>
+            ))}
           </div>
           <p className="text-xs text-voro-text-muted">
             Compensation details are for reference only. Actual commission plans and caps are governed by your
