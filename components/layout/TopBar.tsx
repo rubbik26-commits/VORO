@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import GlobalSearch from "./GlobalSearch";
 import NotificationsMenu from "./NotificationsMenu";
+import VoroLogo from "@/components/ui/VoroLogo";
 import { getCurrentAgent } from "@/lib/auth";
 
 export default function TopBar() {
@@ -18,12 +19,16 @@ export default function TopBar() {
       >
         Skip to content
       </a>
+      {/* VORO logo visible on mobile (sidebar is hidden on small screens) */}
+      <Link href="/dashboard" className="lg:hidden shrink-0" aria-label="VORO Home">
+        <VoroLogo width={80} />
+      </Link>
       <GlobalSearch />
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-2 ml-auto shrink-0">
         <button
           type="button"
           onClick={() => router.push("/transactions/new")}
-          className="btn-primary text-xs py-2 px-4 flex items-center gap-1.5"
+          className="btn-primary text-xs py-2 px-4 items-center gap-1.5 hidden sm:inline-flex"
           aria-label="Submit a deal"
         >
           <Plus size={14} /> Submit Deal

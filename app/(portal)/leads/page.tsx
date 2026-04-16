@@ -21,6 +21,14 @@ const sv: Record<string, "default" | "warning" | "success" | "danger" | "neutral
   Closed: "neutral",
   Lost: "danger",
 };
+const statusAccent: Record<string, "success" | "warning" | "danger" | "purple"> = {
+  New: "purple",
+  Contacted: "warning",
+  Active: "success",
+  Nurturing: "purple",
+  Closed: "purple",
+  Lost: "danger",
+};
 const tv: Record<string, string> = {
   Buyer: "bg-blue-50 text-blue-700",
   Seller: "bg-amber-50 text-amber-700",
@@ -157,8 +165,8 @@ function LeadsContent() {
           { label: "New This Week", value: leads.filter((l) => l.status === "New").length.toString() },
           { label: "Active", value: leads.filter((l) => l.status === "Active").length.toString() },
           { label: "Recruiting", value: leads.filter((l) => l.type === "Recruit").length.toString() },
-        ].map((k) => (
-          <Card key={k.label} className="flex flex-col gap-2">
+        ].map((k, i) => (
+          <Card key={k.label} variant="stat" className={`flex flex-col gap-2 animate-fade-in stagger-${i + 1}`}>
             <div className="text-xs font-semibold text-voro-text-muted">{k.label}</div>
             <div className="text-3xl font-black text-voro-jet tabular-nums">{k.value}</div>
           </Card>
@@ -224,8 +232,8 @@ function LeadsContent() {
             />
           </Card>
         )}
-        {filtered.map((l) => (
-          <Card key={l.id} className="flex flex-col gap-3 hover:shadow-medium transition-shadow">
+        {filtered.map((l, idx) => (
+          <Card key={l.id} accent={statusAccent[l.status] ?? "purple"} className={`flex flex-col gap-3 animate-fade-in stagger-${Math.min(idx + 1, 8)}`}>
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="text-base font-bold text-voro-jet">{l.name}</div>

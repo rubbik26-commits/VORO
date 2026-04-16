@@ -96,7 +96,7 @@ export default function MarketingPage() {
                   toast("Could not submit request. Try again.", "error");
                 }
               }}
-              className="text-left rounded-xl border border-voro-muted-border bg-voro-ghost p-4 hover:border-voro-purple hover:shadow-soft transition-all group"
+              className="text-left rounded-xl border border-voro-muted-border bg-voro-ghost p-4 hover:border-voro-purple hover:shadow-soft transition-all group card-accent-left"
             >
               <div className="text-sm font-bold text-voro-jet group-hover:text-voro-purple transition-colors">
                 {r.label}
@@ -144,7 +144,7 @@ export default function MarketingPage() {
           {filtered.map((asset) => (
             <div
               key={asset.id}
-              className="flex items-center justify-between gap-4 bg-white hover:bg-voro-ghost transition-colors px-5 py-4"
+              className="flex items-center justify-between gap-4 bg-white hover:bg-voro-ghost hover:pl-6 transition-all px-5 py-4"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-voro-soft-panel flex items-center justify-center shrink-0">

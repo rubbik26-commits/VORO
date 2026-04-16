@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { Home, ArrowLeft } from "lucide-react";
+import VoroLogo from "@/components/ui/VoroLogo";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-voro-ghost px-6 py-12">
       <div className="max-w-lg w-full text-center">
+        <div className="flex justify-center mb-6">
+          <VoroLogo width={140} />
+        </div>
         <div className="text-[88px] leading-none font-black text-transparent bg-clip-text bg-gradient-accent">
           404
         </div>

@@ -9,7 +9,7 @@ export default function ProgressBar({
       {label && (
         <div className="flex justify-between text-xs text-voro-text-muted mb-1">
           <span>{label}</span>
-          <span className="font-semibold">{pct}%</span>
+          <span className="font-semibold tabular-nums">{pct}%</span>
         </div>
       )}
       <div className="h-2.5 rounded-full bg-voro-soft-panel overflow-hidden">
@@ -19,7 +19,7 @@ export default function ProgressBar({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label={label ?? `${pct}% complete`}
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full animate-progress-fill"
           style={{ width: `${pct}%`, background: "linear-gradient(90deg,#5E42BC 0%,#F982FF 100%)" }}
         />
       </div>

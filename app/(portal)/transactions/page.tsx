@@ -23,6 +23,17 @@ const sv: Record<string, "default" | "warning" | "danger" | "success" | "neutral
   Closed: "success",
   "Broker Review": "warning",
 };
+
+const statusAccent: Record<string, string> = {
+  "Attorney Review": "accent-purple",
+  "Inspection Scheduled": "accent-warning",
+  "Documents Outstanding": "accent-danger",
+  "Clear to Close": "accent-success",
+  "Accepted Offer": "accent-purple",
+  "Inspection Complete": "accent-purple",
+  Closed: "accent-success",
+  "Broker Review": "accent-warning",
+};
 const rv: Record<string, "success" | "warning" | "danger"> = {
   Approved: "success",
   Pending: "warning",
@@ -104,8 +115,8 @@ export default function TransactionsPage() {
             label: "Needs Broker Review",
             value: transactions.filter((t) => t.brokerReview !== "Approved").length.toString(),
           },
-        ].map((k) => (
-          <Card key={k.label} className="flex flex-col gap-2">
+        ].map((k, i) => (
+          <Card key={k.label} variant="stat" className={`flex flex-col gap-2 animate-fade-in stagger-${i + 1}`}>
             <div className="text-xs font-semibold text-voro-text-muted">{k.label}</div>
             <div className="text-3xl font-black tracking-tight text-voro-jet tabular-nums">{k.value}</div>
           </Card>
@@ -183,8 +194,8 @@ export default function TransactionsPage() {
             />
           </Card>
         )}
-        {filtered.map((t) => (
-          <Card key={t.id} padding={false}>
+        {filtered.map((t, idx) => (
+          <Card key={t.id} padding={false} className={`animate-fade-in stagger-${Math.min(idx + 1, 8)} ${statusAccent[t.status] ?? "accent-purple"}`}>
             <div className="flex flex-wrap items-start justify-between gap-4 p-5 border-b border-voro-muted-border">
               <div>
                 <div className="text-lg font-bold text-voro-jet">
