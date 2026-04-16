@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: voro-agent-portal
+    env: node
+    region: ohio
+    plan: free
+    branch: ACRIS
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: NEXT_PUBLIC_ROLE_GATING_ENABLED
+        value: false
