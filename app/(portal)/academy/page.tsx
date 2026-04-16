@@ -118,6 +118,7 @@ export default function AcademyPage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge variant={tv[a.type]}>{a.type}</Badge>
                     <button
+                      type="button"
                       onClick={() => toggleEnroll(a.id, a.title)}
                       className={enrolled ? "btn-secondary text-xs py-1.5 px-4" : "btn-primary text-xs py-1.5 px-4"}
                     >
@@ -167,6 +168,7 @@ export default function AcademyPage() {
                 description="Try adjusting your search or type filter to find what you're looking for."
                 action={
                   <button
+                    type="button"
                     onClick={() => { setQuery(""); setTypeFilter("All"); }}
                     className="btn-ghost text-xs"
                   >
@@ -216,6 +218,7 @@ export default function AcademyPage() {
                 </div>
                 {!a.completed && (
                   <button
+                    type="button"
                     onClick={() => toggleEnroll(a.id, a.title)}
                     className={`mt-3 w-full text-xs ${
                       enrolled ? "btn-secondary py-1.5" : "btn-primary py-1.5"

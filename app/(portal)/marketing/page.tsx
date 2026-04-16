@@ -86,7 +86,16 @@ export default function MarketingPage() {
           {quickRequests.map((r) => (
             <button
               key={r.label}
-              onClick={() => toast(`Requested: ${r.label}. Marketing will follow up.`, "success")}
+              type="button"
+              onClick={async () => {
+                try {
+                  await createMarketingRequest({ type: r.label, urgency: "Standard", details: r.description });
+                  track("marketing_quick_request", { type: r.label });
+                  toast(`${r.label} request submitted. Marketing will follow up.`, "success");
+                } catch {
+                  toast("Could not submit request. Try again.", "error");
+                }
+              }}
               className="text-left rounded-xl border border-voro-muted-border bg-voro-ghost p-4 hover:border-voro-purple hover:shadow-soft transition-all group"
             >
               <div className="text-sm font-bold text-voro-jet group-hover:text-voro-purple transition-colors">

@@ -7,6 +7,7 @@ import Modal from "@/components/ui/Modal";
 import PageHeader from "@/components/ui/PageHeader";
 import { useToast } from "@/components/ui/Toast";
 import { track } from "@/lib/analytics";
+import { brandTokens } from "@/lib/brand-tokens";
 import {
   HeartHandshake,
   Building2,
@@ -102,11 +103,11 @@ export default function ServicesPage() {
           Our operations team handles custom requests.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <a href="tel:877-943-8676" className="btn-primary text-sm">
-            Call 877-943-8676
+          <a href={`tel:${brandTokens.contact.phone}`} className="btn-primary text-sm">
+            Call {brandTokens.contact.phone}
           </a>
-          <a href="mailto:hello@voro.com" className="btn-secondary text-sm">
-            Email hello@voro.com
+          <a href={`mailto:${brandTokens.contact.email}`} className="btn-secondary text-sm">
+            Email {brandTokens.contact.email}
           </a>
         </div>
       </Card>

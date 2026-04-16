@@ -111,14 +111,14 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-col gap-1.5 text-xs text-voro-indigo">
               <a
-                href="tel:877-943-8676"
+                href={`tel:${brandTokens.contact.phone}`}
                 className="flex items-center gap-2 hover:text-voro-purple transition-colors"
               >
                 <Phone size={12} className="text-voro-purple" />
                 {brandTokens.contact.phone}
               </a>
               <a
-                href="mailto:hello@voro.com"
+                href={`mailto:${brandTokens.contact.email}`}
                 className="flex items-center gap-2 hover:text-voro-purple transition-colors"
               >
                 <Mail size={12} className="text-voro-purple" />
