@@ -20,14 +20,14 @@ export default function VoroLogo({
   mono?: boolean;
 }) {
   const fill = mono ? "#FFFFFF" : (color ?? "#5E42BC");
-  // The logo aspect ratio is roughly 5:1.5
-  const height = Math.round(width * 0.32);
+  // viewBox is 660x160 — height ratio = 160/660 ≈ 0.242
+  const height = Math.round(width * 0.242);
 
   return (
     <svg
       width={width}
       height={height}
-      viewBox="0 0 520 160"
+      viewBox="0 0 660 160"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-label="VORO®"

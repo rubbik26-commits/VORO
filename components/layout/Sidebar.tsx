@@ -83,7 +83,7 @@ export default function Sidebar() {
     );
   };
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ showClose = false }: { showClose?: boolean }) => (
     <div className="flex flex-col h-full py-5 px-3 relative">
       {/* Gradient mesh background */}
       <div
@@ -94,11 +94,23 @@ export default function Sidebar() {
         }}
       />
       <div className="relative z-10 flex flex-col h-full">
-        <div className="flex flex-col gap-1 px-2 mb-6">
-          <VoroLogo width={110} />
-          <div className="text-[10px] font-bold uppercase tracking-widest text-voro-text-muted mt-0.5">
-            Agent Portal
+        <div className="flex items-start justify-between gap-2 px-2 mb-6">
+          <div className="flex flex-col gap-1">
+            <VoroLogo width={130} />
+            <div className="text-[10px] font-bold uppercase tracking-widest text-voro-text-muted mt-0.5">
+              Agent Portal
+            </div>
           </div>
+          {showClose && (
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="w-8 h-8 rounded-lg bg-voro-ghost flex items-center justify-center text-voro-text-muted hover:text-voro-jet hover:bg-voro-soft-panel transition-colors shrink-0 mt-0.5"
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
         <nav aria-label="Main navigation" className="flex flex-col gap-1 flex-1">
           {navItems.map((item) => (
@@ -134,15 +146,18 @@ export default function Sidebar() {
       <aside className="hidden lg:flex flex-col w-[230px] xl:w-[250px] border-r border-voro-muted-border bg-white shrink-0 sticky top-0 h-screen overflow-y-auto">
         <SidebarContent />
       </aside>
-      <button
-        type="button"
-        className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-xl bg-white border border-voro-muted-border shadow-soft flex items-center justify-center text-voro-indigo"
-        onClick={() => setOpen(!open)}
-        aria-label={open ? "Close menu" : "Open menu"}
-        aria-controls="sidebar-nav"
-      >
-        {open ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      {/* Hamburger button — only visible when drawer is closed */}
+      {!open && (
+        <button
+          type="button"
+          className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-xl bg-white border border-voro-muted-border shadow-soft flex items-center justify-center text-voro-indigo"
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          aria-controls="sidebar-nav"
+        >
+          <Menu size={20} />
+        </button>
+      )}
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
@@ -153,7 +168,7 @@ export default function Sidebar() {
             id="sidebar-nav"
             className="relative z-50 w-64 h-full bg-white border-r border-voro-muted-border overflow-y-auto animate-slide-in-right"
           >
-            <SidebarContent />
+            <SidebarContent showClose />
           </aside>
         </div>
       )}
