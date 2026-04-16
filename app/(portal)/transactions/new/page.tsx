@@ -125,7 +125,7 @@ export default function NewTransactionPage() {
                 onChange={(e) => set("state", e.target.value)}
                 className="input"
               >
-                {["NY", "NJ", "CT", "PA", "FL", "MA", "CA"].map((s) => (
+                {["NY", "NJ", "CT", "PA", "FL", "MA", "GA", "AR", "TX"].map((s) => (
                   <option key={s}>{s}</option>
                 ))}
               </select>

@@ -55,7 +55,7 @@ const EMPTY_DRAFT: DraftLead = {
 
 export default function LeadsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <LeadsContent />
     </Suspense>
   );
@@ -167,7 +167,7 @@ function LeadsContent() {
 
       <Card>
         <div className="flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-[180px] flex items-center gap-2 rounded-xl border border-voro-muted-border bg-voro-ghost px-3 py-2">
+          <div className="flex-1 sm:min-w-[180px] flex items-center gap-2 rounded-xl border border-voro-muted-border bg-voro-ghost px-3 py-2">
             <Search size={14} className="text-voro-text-faint" />
             <input
               value={query}

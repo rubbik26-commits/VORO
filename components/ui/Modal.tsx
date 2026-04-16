@@ -63,7 +63,7 @@ export default function Modal({
         aria-labelledby="voro-modal-title"
         className={`relative w-full ${sizeClasses[size]} rounded-3xl bg-white shadow-xl border border-voro-muted-border outline-none animate-[fadeIn_.18s_ease]`}
       >
-        <div className="flex items-start gap-4 px-6 pt-5 pb-3 border-b border-voro-muted-border">
+        <div className="flex items-start gap-4 px-4 md:px-6 pt-5 pb-3 border-b border-voro-muted-border">
           <div className="flex-1 min-w-0">
             <div id="voro-modal-title" className="section-title">
               {title}
@@ -79,9 +79,9 @@ export default function Modal({
             <X size={16} />
           </button>
         </div>
-        <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">{children}</div>
+        <div className="px-4 md:px-6 py-5 max-h-[70vh] overflow-y-auto">{children}</div>
         {footer && (
-          <div className="px-6 py-4 border-t border-voro-muted-border flex items-center justify-end gap-2 bg-voro-ghost/60 rounded-b-3xl">
+          <div className="px-4 md:px-6 py-4 border-t border-voro-muted-border flex items-center justify-end gap-2 bg-voro-ghost/60 rounded-b-3xl">
             {footer}
           </div>
         )}

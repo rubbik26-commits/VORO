@@ -1,5 +1,6 @@
 export const brandTokens = {
   colors: {
+    voroRed:      "#D02C30",   // Official VORO brand red (PMS 711 C)
     royalPurple:  "#5E42BC",
     electricPink: "#F982FF",
     darkIndigo:   "#271C4F",
@@ -40,14 +41,14 @@ export const brandTokens = {
     phone:           "877-943-8676",
     email:           "hello@voro.com",
     corporateOffice: "5550 Glades Rd, Suite 500, Boca Raton, FL 33431",
-    office:          "1129 Northern Blvd, Suite 404, Manhasset, NY 11030",
+    office:          "1129 Northern Blvd, Suite 422, Manhasset, NY 11030",
   },
   social: {
-    instagram: "https://instagram.com/vorobrokerage",
-    facebook:  "https://facebook.com/vorobrokerage",
-    linkedin:  "https://linkedin.com/company/voro",
-    youtube:   "https://youtube.com/@vorobrokerage",
-    tiktok:    "https://tiktok.com/@vorobrokerage",
+    instagram: "https://instagram.com/vororealestate",
+    facebook:  "https://facebook.com/vororealestate",
+    linkedin:  "https://linkedin.com/company/vororealestate",
+    youtube:   "https://youtube.com/@vororealestate",
+    tiktok:    "https://tiktok.com/@vororealestate",
   },
   nav: [
     "Dashboard",

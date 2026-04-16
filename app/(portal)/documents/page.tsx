@@ -22,7 +22,7 @@ const categoryVariant: Record<string, "default" | "warning" | "success" | "dange
 
 export default function DocumentsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <DocumentsContent />
     </Suspense>
   );
