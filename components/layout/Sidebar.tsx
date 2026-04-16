@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import VoroLogo from "@/components/ui/VoroLogo";
+import VoroCommercialLogo from "@/components/ui/VoroCommercialLogo";
 import { getCurrentAgent } from "@/lib/auth";
 import {
   LayoutDashboard,
@@ -48,6 +49,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const agent = getCurrentAgent();
+  const isCommercial = pathname.startsWith("/commercial");
 
   const NavLink = ({
     href,
@@ -71,7 +73,6 @@ export default function Sidebar() {
         }
         aria-current={active ? "page" : undefined}
       >
-        {/* Sliding active indicator bar */}
         <span
           className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-full bg-voro-purple transition-all duration-300 ${
             active ? "h-5 opacity-100" : "h-0 opacity-0 group-hover:h-3 group-hover:opacity-40"
@@ -85,21 +86,27 @@ export default function Sidebar() {
 
   const SidebarContent = ({ showClose = false }: { showClose?: boolean }) => (
     <div className="flex flex-col h-full py-5 px-3 relative">
-      {/* Gradient mesh background */}
       <div
         className="absolute inset-0 pointer-events-none opacity-60"
         style={{
-          backgroundImage:
-            "radial-gradient(ellipse at 20% 80%, rgba(94,66,188,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 10%, rgba(249,130,255,0.04) 0%, transparent 50%)",
+          backgroundImage: isCommercial
+            ? "radial-gradient(ellipse at 20% 80%, rgba(197,160,60,0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 10%, rgba(94,66,188,0.08) 0%, transparent 50%)"
+            : "radial-gradient(ellipse at 20% 80%, rgba(94,66,188,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 10%, rgba(249,130,255,0.04) 0%, transparent 50%)",
         }}
       />
       <div className="relative z-10 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 px-2 mb-6">
           <div className="flex flex-col gap-1">
-            <VoroLogo width={130} />
-            <div className="text-[10px] font-bold uppercase tracking-widest text-voro-text-muted mt-0.5">
-              Agent Portal
-            </div>
+            {isCommercial ? (
+              <VoroCommercialLogo width={140} />
+            ) : (
+              <>
+                <VoroLogo width={130} />
+                <div className="text-[10px] font-bold uppercase tracking-widest text-voro-text-muted mt-0.5">
+                  Agent Portal
+                </div>
+              </>
+            )}
           </div>
           {showClose && (
             <button
@@ -146,7 +153,6 @@ export default function Sidebar() {
       <aside className="hidden lg:flex flex-col w-[230px] xl:w-[250px] border-r border-voro-muted-border bg-white shrink-0 sticky top-0 h-screen overflow-y-auto">
         <SidebarContent />
       </aside>
-      {/* Hamburger button — only visible when drawer is closed */}
       {!open && (
         <button
           type="button"
