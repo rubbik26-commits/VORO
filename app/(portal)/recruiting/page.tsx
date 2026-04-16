@@ -1,29 +1,51 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import { leads } from "@/data/mock-data";
+import { getLeads, createLead } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import type { Lead } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
 import { UserPlus2, Mail, Phone } from "lucide-react";
 
 export default function RecruitingPage() {
   const { toast } = useToast();
-  const recruitingLeads = leads.filter((l) => l.type === "Recruit");
+  const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [form, setForm] = useState({ name: "", market: "", source: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    getLeads().then(setAllLeads);
+  }, []);
+
+  const recruitingLeads = useMemo(() => allLeads.filter((l) => l.type === "Recruit"), [allLeads]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name.trim() || !form.market.trim()) {
       toast("Name and market are required.", "error");
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      toast(`${form.name} added to recruiting pipeline.`, "success");
+    try {
+      const created = await createLead({
+        name: form.name.trim(),
+        type: "Recruit",
+        market: form.market.trim(),
+        phone: "",
+        email: "",
+        source: form.source.trim() || "Direct",
+        notes: form.notes.trim(),
+      });
+      setAllLeads((prev) => [created, ...prev]);
+      track("recruit_added", { id: created.id, name: created.name });
+      toast(`${created.name} added to recruiting pipeline.`, "success");
       setForm({ name: "", market: "", source: "", notes: "" });
-    }, 500);
+    } catch {
+      toast("Could not add recruit. Try again.", "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

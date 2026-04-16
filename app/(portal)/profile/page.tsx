@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
-import { agent } from "@/data/mock-data";
-import { formatDate } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { getAgent } from "@/lib/api";
+import type { Agent } from "@/lib/types";
+import { formatDate, isValidEmail, isValidPhone } from "@/lib/utils";
 import Card from "@/components/ui/Card";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Badge from "@/components/ui/Badge";
@@ -26,19 +27,43 @@ import {
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const [bio, setBio] = useState(agent.bio);
-  const [phoneVal, setPhoneVal] = useState(agent.phone);
-  const [emailVal, setEmailVal] = useState(agent.email);
-  const [websiteVal, setWebsiteVal] = useState(agent.website);
-  const [languages, setLanguages] = useState<string[]>([...agent.languages]);
+  const [agent, setAgent] = useState<Agent | null>(null);
+  const [bio, setBio] = useState("");
+  const [phoneVal, setPhoneVal] = useState("");
+  const [emailVal, setEmailVal] = useState("");
+  const [websiteVal, setWebsiteVal] = useState("");
+  const [languages, setLanguages] = useState<string[]>([]);
   const [newLang, setNewLang] = useState("");
-  const [specialties, setSpecialties] = useState<string[]>([...agent.specialties]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
   const [newSpecialty, setNewSpecialty] = useState("");
   const [profilePublic, setProfilePublic] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    getAgent().then((a) => {
+      setAgent(a);
+      setBio(a.bio);
+      setPhoneVal(a.phone);
+      setEmailVal(a.email);
+      setWebsiteVal(a.website);
+      setLanguages([...a.languages]);
+      setSpecialties([...a.specialties]);
+    });
+  }, []);
+
+  if (!agent) return null;
+
   const incomplete = 100 - agent.profileCompleteness;
 
   const handleSave = async () => {
+    if (emailVal && !isValidEmail(emailVal)) {
+      toast("Please enter a valid email address.", "error");
+      return;
+    }
+    if (phoneVal && !isValidPhone(phoneVal)) {
+      toast("Please enter a valid phone number.", "error");
+      return;
+    }
     setSaving(true);
     try {
       await updateAgentProfile({

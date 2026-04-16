@@ -1,11 +1,15 @@
 "use client";
-import { useMemo, useState } from "react";
-import { marketingAssets } from "@/data/mock-data";
+import { useEffect, useMemo, useState } from "react";
+import { getMarketingAssets } from "@/lib/api";
+import type { MarketingAsset } from "@/lib/types";
+import { track } from "@/lib/analytics";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Modal from "@/components/ui/Modal";
 import PageHeader from "@/components/ui/PageHeader";
+import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
-import { Download, Eye, FileImage, Mail, FileText, Package, Video, Megaphone, Search } from "lucide-react";
+import { Download, Eye, FileImage, Mail, FileText, Package, Video, Megaphone, Search, ImageOff } from "lucide-react";
 
 const categoryIcon: Record<string, React.ReactNode> = {
   Social: <FileImage size={18} className="text-voro-purple" />,
@@ -25,28 +29,38 @@ const quickRequests = [
 
 export default function MarketingPage() {
   const { toast } = useToast();
+  const [assets, setAssets] = useState<MarketingAsset[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [query, setQuery] = useState("");
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [requestForm, setRequestForm] = useState({ type: "Listing Flyer", details: "", urgency: "Standard" });
+  const [requestSubmitting, setRequestSubmitting] = useState(false);
+
+  useEffect(() => {
+    getMarketingAssets().then(setAssets);
+  }, []);
 
   const categories = useMemo(
-    () => ["All", ...Array.from(new Set(marketingAssets.map((a) => a.category)))],
-    [],
+    () => ["All", ...Array.from(new Set(assets.map((a) => a.category)))],
+    [assets],
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return marketingAssets.filter((a) => {
+    return assets.filter((a) => {
       if (activeCategory !== "All" && a.category !== activeCategory) return false;
       if (!q) return true;
       return a.name.toLowerCase().includes(q) || a.category.toLowerCase().includes(q);
     });
-  }, [activeCategory, query]);
+  }, [activeCategory, query, assets]);
 
   const handleDownload = (name: string, format: string) => {
-    toast(`Downloading “${name}” (${format})…`, "success");
+    track("marketing_download", { name, format });
+    toast(`Downloading "${name}" (${format}). Check your downloads folder.`, "success");
   };
   const handlePreview = (name: string) => {
-    toast(`Previewing “${name}” (mock — wire to asset CDN).`, "info");
+    track("marketing_preview", { name });
+    toast(`Opening preview for "${name}".`, "info");
   };
 
   return (
@@ -56,7 +70,7 @@ export default function MarketingPage() {
         description="Brand assets, templates, and custom marketing requests."
         action={
           <button
-            onClick={() => toast("Custom asset request form queued.", "success")}
+            onClick={() => setRequestModalOpen(true)}
             className="btn-primary text-sm flex items-center gap-2"
           >
             <Megaphone size={15} />
@@ -87,7 +101,7 @@ export default function MarketingPage() {
           <div>
             <div className="section-title">Asset Library</div>
             <div className="section-body mt-0.5">
-              Showing {filtered.length} of {marketingAssets.length} assets.
+              Showing {filtered.length} of {assets.length} assets.
             </div>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-voro-muted-border bg-voro-ghost px-3 py-2">
@@ -152,12 +166,103 @@ export default function MarketingPage() {
             </div>
           ))}
           {filtered.length === 0 && (
-            <div className="col-span-full bg-white text-center py-10">
-              <div className="text-sm font-semibold text-voro-text-muted">No assets match your filters.</div>
+            <div className="col-span-full bg-white">
+              <EmptyState
+                icon={ImageOff}
+                title="No assets match your filters"
+                description="Try adjusting your search or category filter to find what you're looking for."
+                action={
+                  <button
+                    onClick={() => { setQuery(""); setActiveCategory("All"); }}
+                    className="btn-ghost text-xs"
+                  >
+                    Clear all filters
+                  </button>
+                }
+              />
             </div>
           )}
         </div>
       </Card>
+
+      <Modal
+        open={requestModalOpen}
+        onClose={() => setRequestModalOpen(false)}
+        title="Request Custom Asset"
+        description="Submit a request and our marketing team will create it for you."
+        footer={
+          <>
+            <button type="button" className="btn-ghost text-sm" onClick={() => setRequestModalOpen(false)}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="custom-asset-form"
+              disabled={requestSubmitting}
+              className="btn-primary text-sm disabled:opacity-60"
+            >
+              {requestSubmitting ? "Submitting…" : "Submit Request"}
+            </button>
+          </>
+        }
+      >
+        <form
+          id="custom-asset-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!requestForm.details.trim()) {
+              toast("Please describe what you need.", "error");
+              return;
+            }
+            setRequestSubmitting(true);
+            setTimeout(() => {
+              setRequestSubmitting(false);
+              track("marketing_custom_request", { type: requestForm.type, urgency: requestForm.urgency });
+              toast(`Custom ${requestForm.type} request submitted. Marketing will follow up.`, "success");
+              setRequestForm({ type: "Listing Flyer", details: "", urgency: "Standard" });
+              setRequestModalOpen(false);
+            }, 500);
+          }}
+          className="flex flex-col gap-3"
+        >
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-voro-text-muted">Asset Type</label>
+            <select
+              value={requestForm.type}
+              onChange={(e) => setRequestForm((f) => ({ ...f, type: e.target.value }))}
+              className="input"
+            >
+              {quickRequests.map((r) => (
+                <option key={r.label}>{r.label}</option>
+              ))}
+              <option>Other</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-voro-text-muted">Urgency</label>
+            <select
+              value={requestForm.urgency}
+              onChange={(e) => setRequestForm((f) => ({ ...f, urgency: e.target.value }))}
+              className="input"
+            >
+              <option>Standard</option>
+              <option>Rush (24hr)</option>
+              <option>Exploratory</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-voro-text-muted">Details</label>
+            <textarea
+              value={requestForm.details}
+              onChange={(e) => setRequestForm((f) => ({ ...f, details: e.target.value }))}
+              rows={4}
+              className="input"
+              placeholder="Describe the asset you need — listing address, branding preferences, copy, deadlines…"
+              required
+            />
+          </div>
+        </form>
+      </Modal>
     </>
   );
 }

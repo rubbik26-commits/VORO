@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import VoroLogo from "@/components/ui/VoroLogo";
+import { getCurrentAgent } from "@/lib/auth";
 import {
   LayoutDashboard,
   FileText,
@@ -46,6 +47,7 @@ const bottomItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const agent = getCurrentAgent();
 
   const NavLink = ({
     href,
@@ -97,11 +99,15 @@ export default function Sidebar() {
       <div className="mt-4 mx-1 px-3 py-3 rounded-xl bg-voro-soft-panel">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-gradient-accent flex items-center justify-center text-white text-xs font-black shrink-0">
-            J
+            {agent.firstName[0]}
           </div>
           <div>
-            <div className="text-xs font-bold text-voro-jet">Jordan Mills</div>
-            <div className="text-xs text-voro-text-muted">NY License</div>
+            <div className="text-xs font-bold text-voro-jet">
+              {agent.firstName} {agent.lastName}
+            </div>
+            <div className="text-xs text-voro-text-muted">
+              {agent.licenseState} License
+            </div>
           </div>
         </div>
       </div>
