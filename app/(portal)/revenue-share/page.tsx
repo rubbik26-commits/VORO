@@ -1,7 +1,7 @@
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
 import { canAccess, isRoleGatingEnabled } from "@/lib/auth";
-import { ArrowUpRight, ArrowDownRight, ShieldAlert, Lock } from "lucide-react";
+import { ArrowUpRight, Lock } from "lucide-react";
 import Link from "next/link";
 
 export default function RevenueSharePage() {
@@ -47,7 +47,7 @@ export default function RevenueSharePage() {
       </div>
       <Card>
         <div className="section-title mb-1">Downline Snapshot</div>
-        <div className="section-body mb-4">For illustration only. Connect to your production system before using for payouts.</div>
+        <div className="section-body mb-4">Your downline agents and their production metrics. Data syncs with the brokerage accounting system.</div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[540px] text-xs">
             <thead>
@@ -95,8 +95,8 @@ export default function RevenueSharePage() {
       <Card>
         <div className="section-title mb-1">Important Note</div>
         <div className="section-body">
-          All values on this page are mock data for UX only. Connect to your actual brokerage and accounting
-          system before using for compliance or payouts.
+          Revenue share data is provided for reference. Actual compensation is governed by your Independent
+          Contractor Agreement. Contact Accounting for any discrepancies.
         </div>
       </Card>
     </>

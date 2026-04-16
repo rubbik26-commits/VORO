@@ -26,6 +26,8 @@ import type {
   Agent,
   AcademySession,
   Announcement,
+  CommercialRequestDraft,
+  MarketingRequestDraft,
   DocumentItem,
   DocumentUpload,
   Kpi,
@@ -33,6 +35,7 @@ import type {
   LeadDraft,
   MarketingAsset,
   Service,
+  ServiceRequestDraft,
   SupportTicket,
   SupportTicketDraft,
   Transaction,
@@ -179,4 +182,37 @@ export async function uploadDocument(
 export async function markAnnouncementRead(id: string): Promise<{ id: string; read: true }> {
   await delay(120);
   return { id, read: true };
+}
+
+export async function createServiceRequest(
+  draft: ServiceRequestDraft,
+): Promise<{ id: string; service: string; status: string }> {
+  await delay(400);
+  return {
+    id: `sr-${Date.now()}`,
+    service: draft.service,
+    status: "Submitted",
+  };
+}
+
+export async function createCommercialRequest(
+  draft: CommercialRequestDraft,
+): Promise<{ id: string; opportunity: string; status: string }> {
+  await delay(500);
+  return {
+    id: `cr-${Date.now()}`,
+    opportunity: draft.opportunity,
+    status: "Submitted",
+  };
+}
+
+export async function createMarketingRequest(
+  draft: MarketingRequestDraft,
+): Promise<{ id: string; type: string; status: string }> {
+  await delay(400);
+  return {
+    id: `mr-${Date.now()}`,
+    type: draft.type,
+    status: "Submitted",
+  };
 }

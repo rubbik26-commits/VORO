@@ -22,7 +22,7 @@ function DeniedBannerInner() {
   if (!denied || dismissed) return null;
 
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-voro-danger/30 bg-red-50/40 p-4">
+    <div role="alert" className="flex items-start gap-3 rounded-2xl border border-voro-danger/30 bg-red-50/40 p-4">
       <ShieldAlert size={18} className="text-voro-danger mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold text-voro-jet">Module access denied</div>
@@ -33,6 +33,7 @@ function DeniedBannerInner() {
         </p>
       </div>
       <button
+        type="button"
         onClick={() => setDismissed(true)}
         className="text-xs font-semibold text-voro-text-muted hover:text-voro-jet shrink-0"
       >

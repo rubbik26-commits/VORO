@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import { getServices } from "@/lib/api";
+import { getServices, createCommercialRequest } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import type { Service } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
@@ -19,24 +19,34 @@ export default function CommercialPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getServices().then(setAllServices);
+    getServices()
+      .then(setAllServices)
+      .catch(() => toast("Could not load services. Try refreshing.", "error"));
   }, []);
 
   const commercialServices = useMemo(() => allServices.filter((s) => s.category === "Commercial"), [allServices]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.opportunity.trim() || !form.details.trim()) {
       toast("Opportunity and details are required.", "error");
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      await createCommercialRequest({
+        opportunity: form.opportunity.trim(),
+        role: form.role,
+        details: form.details.trim(),
+      });
       track("commercial_request_submitted", { opportunity: form.opportunity, role: form.role });
       toast("Commercial desk request submitted.", "success");
       setForm({ opportunity: "", role: "Buyer rep", details: "" });
-    }, 600);
+    } catch {
+      toast("Could not submit request. Try again.", "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

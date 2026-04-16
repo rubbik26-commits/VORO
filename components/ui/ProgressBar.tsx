@@ -14,6 +14,11 @@ export default function ProgressBar({
       )}
       <div className="h-2.5 rounded-full bg-voro-soft-panel overflow-hidden">
         <div
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={label ?? `${pct}% complete`}
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, background: "linear-gradient(90deg,#5E42BC 0%,#F982FF 100%)" }}
         />

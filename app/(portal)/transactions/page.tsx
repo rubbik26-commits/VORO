@@ -48,7 +48,9 @@ export default function TransactionsPage() {
   const [sortBy, setSortBy] = useState<SortKey>("closing");
 
   useEffect(() => {
-    getTransactions().then(setTransactions);
+    getTransactions()
+      .then(setTransactions)
+      .catch(() => toast("Could not load transactions. Try refreshing.", "error"));
   }, []);
 
   const uniqueStatuses = useMemo(
@@ -78,7 +80,7 @@ export default function TransactionsPage() {
       sorted.sort((a, b) => a.status.localeCompare(b.status));
     }
     return sorted;
-  }, [query, side, status, sortBy]);
+  }, [query, side, status, sortBy, transactions]);
 
   const pipeline = transactions.reduce((s, t) => s + t.commission, 0);
 

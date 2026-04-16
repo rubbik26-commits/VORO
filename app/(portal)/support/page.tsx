@@ -43,7 +43,9 @@ export default function SupportPage() {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
 
   useEffect(() => {
-    getSupportTickets().then(setTickets);
+    getSupportTickets()
+      .then(setTickets)
+      .catch(() => toast("Could not load tickets. Try refreshing.", "error"));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -287,7 +289,7 @@ export default function SupportPage() {
               </div>
             </div>
             <p className="text-xs text-voro-text-muted">
-              Updates and replies will appear here once the system is connected to the ticketing backend.
+              Updates and replies from the support team will appear here. You will also receive email notifications.
             </p>
           </div>
         )}

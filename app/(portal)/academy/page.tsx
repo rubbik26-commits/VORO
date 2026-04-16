@@ -35,10 +35,12 @@ export default function AcademyPage() {
   const [typeFilter, setTypeFilter] = useState<(typeof TYPE_OPTIONS)[number]>("All");
 
   useEffect(() => {
-    getAcademySessions().then((data) => {
-      setSessions(data);
-      setEnrolledIds(new Set(data.filter((a) => a.enrolled).map((a) => a.id)));
-    });
+    getAcademySessions()
+      .then((data) => {
+        setSessions(data);
+        setEnrolledIds(new Set(data.filter((a) => a.enrolled).map((a) => a.id)));
+      })
+      .catch(() => toast("Could not load courses. Try refreshing.", "error"));
   }, []);
 
   const toggleEnroll = (id: string, title: string) => {

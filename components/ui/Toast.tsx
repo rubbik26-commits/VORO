@@ -77,6 +77,7 @@ function ToastPill({ item, onDismiss }: { item: ToastItem; onDismiss: () => void
       <div className="mt-0.5 shrink-0">{icon}</div>
       <div className="text-sm font-semibold text-voro-jet flex-1 leading-snug">{item.message}</div>
       <button
+        type="button"
         onClick={onDismiss}
         aria-label="Dismiss notification"
         className="shrink-0 text-voro-text-faint hover:text-voro-jet transition-colors"

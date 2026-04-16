@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import { getAgent } from "@/lib/api";
+import { getAgent, updateAgentProfile } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import { isValidEmail } from "@/lib/utils";
 import type { Agent } from "@/lib/types";
@@ -45,12 +45,14 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState("");
 
   useEffect(() => {
-    getAgent().then((a) => {
-      setFirstName(a.firstName);
-      setLastName(a.lastName);
-      setEmail(a.email);
-      setPhone(a.phone);
-    });
+    getAgent()
+      .then((a) => {
+        setFirstName(a.firstName);
+        setLastName(a.lastName);
+        setEmail(a.email);
+        setPhone(a.phone);
+      })
+      .catch(() => toast("Could not load account info. Try refreshing.", "error"));
   }, []);
   const [password, setPassword] = useState({ current: "", next: "", confirm: "" });
   const [showPwd, setShowPwd] = useState(false);
@@ -61,13 +63,23 @@ export default function SettingsPage() {
     { name: "DocuSign", desc: "E-signature workflow", connected: true },
   ]);
 
-  const handleSaveAccount = () => {
+  const handleSaveAccount = async () => {
     if (email && !isValidEmail(email)) {
       toast("Please enter a valid email address.", "error");
       return;
     }
-    track("settings_account_saved");
-    toast(`Account info saved for ${firstName} ${lastName}.`, "success");
+    try {
+      await updateAgentProfile({
+        firstName,
+        lastName,
+        email,
+        phone,
+      });
+      track("settings_account_saved");
+      toast(`Account info saved for ${firstName} ${lastName}.`, "success");
+    } catch {
+      toast("Could not save account info. Try again.", "error");
+    }
   };
 
   const handleUpdatePassword = () => {

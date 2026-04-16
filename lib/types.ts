@@ -73,3 +73,23 @@ export type DocumentUpload = {
   state: DocumentItem["state"];
   format: DocumentItem["format"];
 };
+
+export type ServiceRequestDraft = {
+  service: string;
+  category: string;
+  subject: string;
+  urgency: string;
+  details: string;
+};
+
+export type CommercialRequestDraft = {
+  opportunity: string;
+  role: string;
+  details: string;
+};
+
+export type MarketingRequestDraft = {
+  type: string;
+  urgency: string;
+  details: string;
+};
