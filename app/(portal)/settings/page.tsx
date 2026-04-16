@@ -1,13 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
 import { getAgent, updateAgentProfile } from "@/lib/api";
+import { getAuthorizationUrl } from "@/lib/skyslope";
 import { track } from "@/lib/analytics";
 import { isValidEmail } from "@/lib/utils";
 import type { Agent } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
-import { Bell, Shield, User, LogOut, Smartphone, Globe, DollarSign } from "lucide-react";
+import { Bell, Shield, User, LogOut, Smartphone, Globe, DollarSign, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 
 type ToggleProps = {
   defaultChecked?: boolean;
@@ -39,10 +41,27 @@ function Toggle({ defaultChecked = false, label, onChange }: ToggleProps) {
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const searchParams = useSearchParams();
+  const [firstName, setFirstName]   = useState("");
+  const [lastName,  setLastName]    = useState("");
+  const [email,     setEmail]       = useState("");
+  const [phone,     setPhone]       = useState("");
+  const [skySlopeStatus, setSkySlopeStatus] = useState<"connected" | "disconnected" | "error" | "denied">("disconnected");
+
+  // Read SkySlope OAuth result from query param after redirect
+  useEffect(() => {
+    const ss = searchParams.get("skyslope");
+    if (ss === "connected") {
+      setSkySlopeStatus("connected");
+      toast("SkySlope connected successfully. Transactions and documents are now live.", "success");
+    } else if (ss === "error") {
+      setSkySlopeStatus("error");
+      toast("SkySlope connection failed. Check your credentials and try again.", "error");
+    } else if (ss === "denied") {
+      setSkySlopeStatus("denied");
+      toast("SkySlope authorization was denied.", "error");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     getAgent()
@@ -54,13 +73,14 @@ export default function SettingsPage() {
       })
       .catch(() => toast("Could not load account info. Try refreshing.", "error"));
   }, []);
+
   const [password, setPassword] = useState({ current: "", next: "", confirm: "" });
-  const [showPwd, setShowPwd] = useState(false);
+  const [showPwd,  setShowPwd]  = useState(false);
   const [integrations, setIntegrations] = useState([
-    { name: "Google", desc: "Sync calendar and contacts", connected: true },
-    { name: "Outlook", desc: "Email and scheduling", connected: false },
-    { name: "Zillow", desc: "Listing syndication", connected: false },
-    { name: "DocuSign", desc: "E-signature workflow", connected: true },
+    { name: "Google",   desc: "Sync calendar and contacts",  connected: true  },
+    { name: "Outlook",  desc: "Email and scheduling",        connected: false },
+    { name: "Zillow",   desc: "Listing syndication",         connected: false },
+    { name: "DocuSign", desc: "E-signature workflow",        connected: true  },
   ]);
 
   const handleSaveAccount = async () => {
@@ -69,12 +89,7 @@ export default function SettingsPage() {
       return;
     }
     try {
-      await updateAgentProfile({
-        firstName,
-        lastName,
-        email,
-        phone,
-      });
+      await updateAgentProfile({ firstName, lastName, email, phone });
       track("settings_account_saved");
       toast(`Account info saved for ${firstName} ${lastName}.`, "success");
     } catch {
@@ -111,6 +126,13 @@ export default function SettingsPage() {
     );
   };
 
+  const handleConnectSkySlope = () => {
+    track("skyslope_connect_initiated");
+    // getAuthorizationUrl() builds the OAuth URL from env vars
+    // This will redirect the browser to SkySlope login
+    window.location.href = getAuthorizationUrl();
+  };
+
   const handleSignOut = () => {
     track("sign_out");
     toast("Signing out of VORO Portal. You will be redirected.", "info");
@@ -120,6 +142,79 @@ export default function SettingsPage() {
     <>
       <PageHeader title="Settings" description="Account, notifications, security, and preferences." />
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+        {/* ── SkySlope Integration ───────────────────────────────────────── */}
+        <Card className="xl:col-span-2">
+          <div className="flex items-center gap-2 mb-4">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg,#1a6fb5,#0d4a82)" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className="section-title">SkySlope Integration</div>
+            {skySlopeStatus === "connected" && (
+              <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
+                <CheckCircle2 size={12} /> Connected
+              </span>
+            )}
+            {skySlopeStatus === "error" && (
+              <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">
+                <AlertCircle size={12} /> Connection failed
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-voro-text-muted mb-5 max-w-2xl">
+            Connect your SkySlope account to sync your brokerage transactions and documents live into
+            VORO. Once connected, the Transactions and Documents pages will pull real data directly
+            from SkySlope instead of demo data.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {[
+              { title: "Transactions",  desc: "All active and closed files pull from SkySlope in real time" },
+              { title: "Documents",     desc: "Checklists, signed docs, and compliance status sync automatically" },
+              { title: "Milestones",    desc: "File progress tracked step-by-step from offer to closing" },
+            ].map((f) => (
+              <div key={f.title} className="rounded-xl bg-voro-ghost border border-voro-muted-border p-4">
+                <div className="text-sm font-bold text-voro-jet mb-1">{f.title}</div>
+                <div className="text-xs text-voro-text-muted">{f.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {skySlopeStatus === "connected" ? (
+              <button
+                onClick={() => {
+                  setSkySlopeStatus("disconnected");
+                  toast("SkySlope disconnected. Portal will use demo data.", "info");
+                }}
+                className="btn-ghost text-sm border border-voro-muted-border"
+              >
+                Disconnect SkySlope
+              </button>
+            ) : (
+              <button
+                onClick={handleConnectSkySlope}
+                className="btn-primary text-sm flex items-center gap-2"
+              >
+                <ExternalLink size={14} />
+                Connect SkySlope Account
+              </button>
+            )}
+            <a
+              href="https://api.skyslope.com/api/docs/redoc/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-voro-text-muted hover:text-voro-purple transition-colors"
+            >
+              SkySlope API docs ↗
+            </a>
+          </div>
+        </Card>
+
+        {/* ── Account Information ────────────────────────────────────────── */}
         <Card>
           <div className="flex items-center gap-2 mb-4">
             <User size={16} className="text-voro-purple" />
@@ -128,17 +223,13 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-4">
             {[
               { label: "First Name", value: firstName, onChange: setFirstName },
-              { label: "Last Name", value: lastName, onChange: setLastName },
-              { label: "Email", value: email, onChange: setEmail },
-              { label: "Phone", value: phone, onChange: setPhone },
+              { label: "Last Name",  value: lastName,  onChange: setLastName  },
+              { label: "Email",      value: email,      onChange: setEmail     },
+              { label: "Phone",      value: phone,      onChange: setPhone     },
             ].map((f) => (
               <div key={f.label} className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-voro-text-muted">{f.label}</label>
-                <input
-                  value={f.value}
-                  onChange={(e) => f.onChange(e.target.value)}
-                  className="input"
-                />
+                <input value={f.value} onChange={(e) => f.onChange(e.target.value)} className="input" />
               </div>
             ))}
             <button onClick={handleSaveAccount} className="btn-primary text-sm self-start px-6">
@@ -146,6 +237,7 @@ export default function SettingsPage() {
             </button>
           </div>
         </Card>
+
         <div className="flex flex-col gap-4">
           <Card>
             <div className="flex items-center gap-2 mb-4">
@@ -189,79 +281,63 @@ export default function SettingsPage() {
             </div>
           </Card>
         </div>
+
+        {/* ── Security ──────────────────────────────────────────────────── */}
         <Card>
           <div className="flex items-center gap-2 mb-4">
             <Shield size={16} className="text-voro-purple" />
             <div className="section-title">Security</div>
           </div>
           <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-voro-text-muted">Current Password</label>
-              <div className="relative">
-                <input
-                  type={showPwd ? "text" : "password"}
-                  value={password.current}
-                  onChange={(e) => setPassword((p) => ({ ...p, current: e.target.value }))}
-                  placeholder="••••••••"
-                  className="input pr-16"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-voro-purple"
-                  aria-label={showPwd ? "Hide password" : "Show password"}
-                >
-                  {showPwd ? "HIDE" : "SHOW"}
-                </button>
+            {["Current Password", "New Password", "Confirm New Password"].map((lbl, i) => (
+              <div key={lbl} className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-voro-text-muted">{lbl}</label>
+                <div className="relative">
+                  <input
+                    type={showPwd ? "text" : "password"}
+                    value={[password.current, password.next, password.confirm][i]}
+                    onChange={(e) => {
+                      const key = ["current", "next", "confirm"][i] as keyof typeof password;
+                      setPassword((p) => ({ ...p, [key]: e.target.value }));
+                    }}
+                    placeholder="••••••••"
+                    className="input pr-16"
+                  />
+                  {i === 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowPwd((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-voro-purple"
+                      aria-label={showPwd ? "Hide password" : "Show password"}
+                    >
+                      {showPwd ? "HIDE" : "SHOW"}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-voro-text-muted">New Password</label>
-              <input
-                type={showPwd ? "text" : "password"}
-                value={password.next}
-                onChange={(e) => setPassword((p) => ({ ...p, next: e.target.value }))}
-                placeholder="••••••••"
-                className="input"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-voro-text-muted">Confirm New Password</label>
-              <input
-                type={showPwd ? "text" : "password"}
-                value={password.confirm}
-                onChange={(e) => setPassword((p) => ({ ...p, confirm: e.target.value }))}
-                placeholder="••••••••"
-                className="input"
-              />
-            </div>
-            <div className="flex items-center justify-between pt-1">
-              <Toggle
-                defaultChecked
-                label="Two-factor authentication"
-                onChange={(v) => toast(`Two-factor authentication ${v ? "enabled" : "disabled"}.`, "info")}
-              />
-            </div>
+            ))}
+            <Toggle
+              defaultChecked
+              label="Two-factor authentication"
+              onChange={(v) => toast(`Two-factor authentication ${v ? "enabled" : "disabled"}.`, "info")}
+            />
             <button onClick={handleUpdatePassword} className="btn-primary text-sm self-start px-6">
               Update Password
             </button>
           </div>
         </Card>
+
+        {/* ── Integrations ──────────────────────────────────────────────── */}
         <Card className="flex flex-col gap-4">
           <div className="flex items-center gap-2 mb-1">
             <Globe size={16} className="text-voro-purple" />
             <div>
-              <div className="section-title">Integrations &amp; Linked Accounts</div>
-              <p className="text-xs text-voro-text-muted mt-0.5">
-                Integrated with the tools you love. Connect accounts to sync data and simplify your workflow.
-              </p>
+              <div className="section-title">Other Integrations</div>
+              <p className="text-xs text-voro-text-muted mt-0.5">Connect accounts to sync data and simplify your workflow.</p>
             </div>
           </div>
           {integrations.map((a) => (
-            <div
-              key={a.name}
-              className="flex items-center justify-between gap-4 py-2 border-b border-voro-muted-border last:border-0"
-            >
+            <div key={a.name} className="flex items-center justify-between gap-4 py-2 border-b border-voro-muted-border last:border-0">
               <div>
                 <div className="text-sm font-semibold text-voro-jet">{a.name}</div>
                 <div className="text-xs text-voro-text-muted">{a.desc}</div>
@@ -269,9 +345,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => toggleIntegration(a.name)}
                 className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
-                  a.connected
-                    ? "bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-700"
-                    : "btn-secondary"
+                  a.connected ? "bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-700" : "btn-secondary"
                 }`}
               >
                 {a.connected ? "Connected" : "Connect"}
@@ -279,15 +353,14 @@ export default function SettingsPage() {
             </div>
           ))}
           <div className="border-t border-voro-muted-border pt-4">
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors"
-            >
+            <button onClick={handleSignOut} className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
               <LogOut size={15} />
               Sign Out of VORO Portal
             </button>
           </div>
         </Card>
+
+        {/* ── Compensation ──────────────────────────────────────────────── */}
         <Card>
           <div className="flex items-center gap-2 mb-4">
             <DollarSign size={16} className="text-voro-purple" />
@@ -295,23 +368,23 @@ export default function SettingsPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
             {[
-              { label: "Current Plan", value: "VORO Pro", color: "text-voro-jet" },
-              { label: "Commission Split", value: "100%", color: "text-voro-jet" },
-              { label: "Transaction Fee", value: "$399", color: "text-voro-jet" },
-              { label: "Annual Cap", value: "$6,000", color: "text-voro-jet" },
+              { label: "Current Plan",    value: "VORO Pro" },
+              { label: "Commission Split",value: "100%" },
+              { label: "Transaction Fee", value: "$399" },
+              { label: "Annual Cap",      value: "$6,000" },
             ].map((s, i) => (
               <div key={s.label} className={`rounded-xl bg-gradient-to-br from-white to-voro-ghost border border-voro-muted-border p-3 animate-fade-in stagger-${i + 1}`}>
                 <div className="text-voro-text-muted">{s.label}</div>
-                <div className={`text-lg font-black ${s.color}`}>{s.value}</div>
+                <div className="text-lg font-black text-voro-jet">{s.value}</div>
               </div>
             ))}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
             {[
-              { label: "YTD Fees Paid", value: "$3,192", color: "text-voro-jet" },
-              { label: "Remaining to Cap", value: "$2,808", color: "text-voro-success" },
-              { label: "Cap Anniversary", value: "Mar 15, 2027", color: "text-voro-jet" },
-              { label: "E&O Coverage", value: "Active", color: "text-voro-success" },
+              { label: "YTD Fees Paid",     value: "$3,192",       color: "text-voro-jet" },
+              { label: "Remaining to Cap",  value: "$2,808",       color: "text-voro-success" },
+              { label: "Cap Anniversary",   value: "Mar 15, 2027", color: "text-voro-jet" },
+              { label: "E&O Coverage",      value: "Active",       color: "text-voro-success" },
             ].map((s, i) => (
               <div key={s.label} className={`rounded-xl bg-gradient-to-br from-white to-voro-ghost border border-voro-muted-border p-3 animate-fade-in stagger-${i + 5}`}>
                 <div className="text-voro-text-muted">{s.label}</div>
@@ -320,29 +393,23 @@ export default function SettingsPage() {
             ))}
           </div>
           <p className="text-xs text-voro-text-muted">
-            Compensation details are for reference only. Actual commission plans and caps are governed by your
-            Independent Contractor Agreement. Contact <span className="font-semibold text-voro-purple">Accounting</span> for disputes.
+            Compensation details are for reference only. Contact{" "}
+            <span className="font-semibold text-voro-purple">Accounting</span> for disputes.
           </p>
         </Card>
+
         <Card>
           <div className="section-title mb-1">Why VORO</div>
           <p className="section-body mb-3">
-            VORO is a real estate cloud broker built for entrepreneurs: generous commission plans, low friction
-            transaction support, modern technology, and the freedom to work from anywhere.
+            VORO is a real estate cloud broker built for entrepreneurs: generous commission plans,
+            low friction transaction support, modern technology, and the freedom to work from anywhere.
           </p>
-          <p className="text-xs text-voro-text-muted mb-4">
-            The same promises you see on voro.com &mdash; cloud broker model, agent support, and digital-first tools
-            &mdash; are delivered here in the portal as your operating system.
-          </p>
-          <a
-            href="https://voro.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-voro-purple hover:text-voro-indigo transition-colors"
-          >
+          <a href="https://voro.com" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-voro-purple hover:text-voro-indigo transition-colors">
             Learn more at voro.com
           </a>
         </Card>
+
       </div>
     </>
   );
