@@ -47,6 +47,7 @@ export const brandTokens = {
     instagram: "https://instagram.com/vororealestate",
     facebook:  "https://facebook.com/vororealestate",
     linkedin:  "https://linkedin.com/company/vororealestate",
+    x:         "https://x.com/vororealestate",
     youtube:   "https://youtube.com/@vororealestate",
     tiktok:    "https://tiktok.com/@vororealestate",
   },
