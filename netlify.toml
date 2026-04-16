@@ -1,10 +1,39 @@
-[build]
-  command = "npm install && npm run build"
-  publish = ".next"
+# ─── Netlify Build Configuration ─────────────────────────────────────────────
+# Docs: https://docs.netlify.com/configure-builds/file-based-configuration/
 
+[build]
+  command   = "npm install && npm run build"
+  publish   = ".next"
+
+# Required plugin — enables Next.js App Router, API routes, and SSR on Netlify
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [build.environment]
-  NODE_VERSION = "20"
-  NEXT_PUBLIC_ROLE_GATING_ENABLED = "false"
+  NODE_VERSION                       = "20"
+  NEXT_PUBLIC_ROLE_GATING_ENABLED    = "false"
+
+# ─── Redirects ────────────────────────────────────────────────────────────────
+# SkySlope OAuth callback — handled by app/api/skyslope/callback/route.ts
+# No redirect rule needed; Next.js API routes work natively via the plugin.
+
+# ─── Headers ─────────────────────────────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+
+# ─── Environment Variables ────────────────────────────────────────────────────
+# Do NOT put real secrets here — this file is committed to Git.
+# Add all secrets in:
+#   Netlify Dashboard → Your Site → Site Configuration → Environment Variables
+#
+# Required variables to add in Netlify Dashboard:
+#
+#   SKYSLOPE_CLIENT_ID       — from SkySlope Developer Portal
+#   SKYSLOPE_CLIENT_SECRET   — from SkySlope Developer Portal
+#   SKYSLOPE_REDIRECT_URI    — https://YOUR-SITE.netlify.app/api/skyslope/callback
+#   SKYSLOPE_ACCESS_TOKEN    — populated after first OAuth flow (see README)
+#   SKYSLOPE_REFRESH_TOKEN   — populated after first OAuth flow (see README)

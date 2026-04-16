@@ -6,12 +6,26 @@
  * callers fall back to mock data automatically (see lib/api/index.ts).
  *
  * Docs: https://api.skyslope.com/api/docs/redoc/index.html
+ *
+ * ── Netlify Environment Variables Required ────────────────────────────────
+ * Set all of the following in:
+ *   Netlify Dashboard → Your Site → Site Configuration → Environment Variables
+ *
+ *   SKYSLOPE_CLIENT_ID      — from SkySlope Developer Portal
+ *   SKYSLOPE_CLIENT_SECRET  — from SkySlope Developer Portal
+ *   SKYSLOPE_REDIRECT_URI   — https://YOUR-SITE.netlify.app/api/skyslope/callback
+ *   SKYSLOPE_ACCESS_TOKEN   — populated after first OAuth flow
+ *   SKYSLOPE_REFRESH_TOKEN  — populated after first OAuth flow
+ *
+ * Token refresh is handled by netlify/functions/skyslope-token-refresh.ts
+ * which runs on a scheduled basis via Netlify Scheduled Functions.
+ * ─────────────────────────────────────────────────────────────────────────
  */
 
 const BASE_URL = "https://api.skyslope.com";
 const AUTH_URL = "https://accounts.skyslope.com/oauth2";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type SkySlopeTokens = {
   access_token: string;
@@ -58,8 +72,10 @@ export type SkySlopeDocument = {
 // ─── OAuth Helpers ────────────────────────────────────────────────────────────
 
 /**
- * Step 1 — Redirect URL
- * Send the agent/broker to this URL to authorize VORO to access their SkySlope account.
+ * Step 1 — Build the SkySlope authorization URL.
+ * Redirect the agent/broker to this URL to authorize VORO.
+ * SKYSLOPE_CLIENT_ID and SKYSLOPE_REDIRECT_URI must be set in
+ * Netlify Dashboard → Site Configuration → Environment Variables.
  */
 export function getAuthorizationUrl(): string {
   const params = new URLSearchParams({
@@ -67,14 +83,15 @@ export function getAuthorizationUrl(): string {
     client_id:     process.env.SKYSLOPE_CLIENT_ID ?? "",
     redirect_uri:  process.env.SKYSLOPE_REDIRECT_URI ?? "",
     scope:         "transactions documents files",
-    state:         crypto.randomUUID(), // CSRF protection — persist in session
+    state:         crypto.randomUUID(), // CSRF — persist in session before redirecting
   });
   return `${AUTH_URL}/authorize?${params.toString()}`;
 }
 
 /**
- * Step 2 — Exchange auth code for access + refresh tokens
- * Called from /api/skyslope/callback after SkySlope redirects back.
+ * Step 2 — Exchange the auth code for access + refresh tokens.
+ * Called automatically by app/api/skyslope/callback/route.ts
+ * after SkySlope redirects back to your Netlify site.
  */
 export async function exchangeCodeForTokens(code: string): Promise<SkySlopeTokens> {
   const res = await fetch(`${AUTH_URL}/token`, {
@@ -96,7 +113,9 @@ export async function exchangeCodeForTokens(code: string): Promise<SkySlopeToken
 }
 
 /**
- * Step 3 — Refresh an expired access token
+ * Step 3 — Refresh an expired access token.
+ * Called automatically by netlify/functions/skyslope-token-refresh.ts
+ * on a schedule. You do not need to call this manually.
  */
 export async function refreshAccessToken(refreshToken: string): Promise<SkySlopeTokens> {
   const res = await fetch(`${AUTH_URL}/token`, {
@@ -115,18 +134,18 @@ export async function refreshAccessToken(refreshToken: string): Promise<SkySlope
   return res.json() as Promise<SkySlopeTokens>;
 }
 
-// ─── API Client ───────────────────────────────────────────────────────────────
+// ─── Internal API Fetch ───────────────────────────────────────────────────────
 
 async function skySlopeGet<T>(path: string, accessToken?: string): Promise<T> {
   const token = accessToken ?? process.env.SKYSLOPE_ACCESS_TOKEN;
-  if (!token) throw new Error("No SkySlope access token available.");
+  if (!token) throw new Error("No SkySlope access token — set SKYSLOPE_ACCESS_TOKEN in Netlify Environment Variables.");
 
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
     },
-    next: { revalidate: 60 }, // cache 60s — Next.js fetch cache
+    next: { revalidate: 60 }, // Next.js fetch cache — revalidate every 60s
   });
 
   if (res.status === 401) throw new Error("SKYSLOPE_TOKEN_EXPIRED");
@@ -136,11 +155,9 @@ async function skySlopeGet<T>(path: string, accessToken?: string): Promise<T> {
 
 // ─── Transaction Endpoints ────────────────────────────────────────────────────
 
-/** Fetch all transactions for the authenticated brokerage/agent */
 export async function fetchSkySlopeTransactions(
   accessToken?: string,
 ): Promise<SkySlopeTransaction[]> {
-  // SkySlope returns paginated results — fetch first page (up to 100)
   const data = await skySlopeGet<{ items: SkySlopeTransaction[] }>(
     "/api/v1/transactions?pageSize=100&pageNumber=1",
     accessToken,
@@ -148,7 +165,6 @@ export async function fetchSkySlopeTransactions(
   return data.items ?? [];
 }
 
-/** Fetch a single transaction with full checklist */
 export async function fetchSkySlopeTransaction(
   id: string,
   accessToken?: string,
@@ -158,7 +174,6 @@ export async function fetchSkySlopeTransaction(
 
 // ─── Document Endpoints ───────────────────────────────────────────────────────
 
-/** Fetch all documents across all transactions */
 export async function fetchSkySlopeDocuments(
   accessToken?: string,
 ): Promise<SkySlopeDocument[]> {
@@ -169,7 +184,6 @@ export async function fetchSkySlopeDocuments(
   return data.items ?? [];
 }
 
-/** Fetch documents for a specific transaction */
 export async function fetchSkySlopeTransactionDocuments(
   transactionId: string,
   accessToken?: string,
@@ -182,8 +196,6 @@ export async function fetchSkySlopeTransactionDocuments(
 }
 
 // ─── Data Mappers ─────────────────────────────────────────────────────────────
-// Map SkySlope shapes → VORO internal types so the rest of the app
-// never needs to know which data source is active.
 
 import type { Transaction, DocumentItem } from "@/lib/types";
 
@@ -206,7 +218,7 @@ export function mapSkySlopeTransaction(s: SkySlopeTransaction): Transaction {
       completed: c.received,
       date:      c.receivedDate,
     })),
-    missingDocs:  s.checklist
+    missingDocs: s.checklist
       .filter((c) => c.required && !c.received)
       .map((c) => c.name),
   };
@@ -223,7 +235,7 @@ export function mapSkySlopeDocument(d: SkySlopeDocument): DocumentItem {
   };
 }
 
-/** True when SkySlope credentials are configured in env */
+/** Returns true when all required SkySlope env vars are present in Netlify */
 export function isSkySlopeConfigured(): boolean {
   return !!(
     process.env.SKYSLOPE_CLIENT_ID &&
