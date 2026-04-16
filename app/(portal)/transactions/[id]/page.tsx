@@ -66,9 +66,13 @@ export default async function TransactionDetailPage({
             </div>
             <div className="h-2 rounded-full bg-voro-ghost overflow-hidden">
               <div
+                role="progressbar"
+                aria-valuenow={progressPct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`File ${progressPct}% complete`}
                 className="h-full bg-gradient-accent"
                 style={{ width: `${progressPct}%` }}
-                aria-label={`File ${progressPct}% complete`}
               />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mt-5">

@@ -42,7 +42,9 @@ function DocumentsContent() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    getDocuments().then(setDocuments);
+    getDocuments()
+      .then(setDocuments)
+      .catch(() => toast("Could not load documents. Try refreshing.", "error"));
   }, []);
 
   useEffect(() => {
@@ -120,6 +122,7 @@ function DocumentsContent() {
         description="Forms, compliance docs, templates, and your uploads."
         action={
           <button
+            type="button"
             onClick={handleUploadClick}
             className="btn-primary text-sm flex items-center gap-2"
           >
@@ -188,6 +191,7 @@ function DocumentsContent() {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-voro-text-faint">{d.format}</span>
                     <button
+                      type="button"
                       onClick={() => {
                         track("document_view", { id: d.id, name: d.name });
                         toast(`Opening "${d.name}" preview.`, "info");
@@ -197,6 +201,7 @@ function DocumentsContent() {
                       View
                     </button>
                     <button
+                      type="button"
                       onClick={() => {
                         track("document_download", { id: d.id, format: d.format });
                         toast(`Downloading "${d.name}" (${d.format}). Check your downloads.`, "success");
@@ -219,6 +224,7 @@ function DocumentsContent() {
               description="Try adjusting your search, state, or category filters to find what you're looking for."
               action={
                 <button
+                  type="button"
                   onClick={() => { setQuery(""); setStateFilter("All"); setCategoryFilter("All"); }}
                   className="btn-ghost text-xs"
                 >

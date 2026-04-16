@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getServices } from "@/lib/api";
+import { getServices, createServiceRequest } from "@/lib/api";
 import type { Service } from "@/lib/types";
 import Card from "@/components/ui/Card";
 import Modal from "@/components/ui/Modal";
@@ -33,19 +33,32 @@ export default function ServicesPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getServices().then(setServices);
+    getServices()
+      .then(setServices)
+      .catch(() => toast("Could not load services. Try refreshing.", "error"));
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!active) return;
+    const formData = new FormData(e.currentTarget);
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      await createServiceRequest({
+        service: active.title,
+        category: active.category,
+        subject: (formData.get("subject") as string) || "",
+        urgency: (formData.get("urgency") as string) || "Standard",
+        details: (formData.get("details") as string) || "",
+      });
       track("service_requested", { id: active.id, category: active.category });
       toast(`${active.title} request submitted. Expected: ${active.eta}.`, "success");
       setActive(null);
-    }, 600);
+    } catch {
+      toast("Could not submit request. Try again.", "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -124,6 +137,7 @@ export default function ServicesPage() {
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-voro-text-muted">Related deal / subject</label>
             <input
+              name="subject"
               required
               className="input"
               placeholder="e.g., 142 W 72nd St — lender referral"
@@ -131,7 +145,7 @@ export default function ServicesPage() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-voro-text-muted">Urgency</label>
-            <select className="input" defaultValue="Standard">
+            <select name="urgency" className="input" defaultValue="Standard">
               <option>Standard</option>
               <option>Rush (24hr)</option>
               <option>Exploratory</option>
@@ -140,6 +154,7 @@ export default function ServicesPage() {
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-voro-text-muted">Details</label>
             <textarea
+              name="details"
               required
               rows={4}
               className="input"

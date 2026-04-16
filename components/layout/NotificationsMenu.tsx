@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 
 type Notification = {
@@ -74,6 +75,7 @@ export default function NotificationsMenu() {
   return (
     <div className="relative" ref={ref}>
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
         aria-expanded={open}
@@ -88,13 +90,14 @@ export default function NotificationsMenu() {
       </button>
       {open && (
         <div
-          role="menu"
+          role="region"
           aria-label="Notifications"
           className="absolute right-0 mt-2 w-80 max-w-[92vw] rounded-2xl bg-white border border-voro-muted-border shadow-medium overflow-hidden z-50"
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-voro-muted-border">
             <div className="text-sm font-black text-voro-jet">Notifications</div>
             <button
+              type="button"
               onClick={markAllRead}
               className="text-xs font-semibold text-voro-purple hover:text-voro-indigo flex items-center gap-1"
             >
@@ -127,7 +130,7 @@ export default function NotificationsMenu() {
                   </>
                 );
                 return n.href ? (
-                  <a
+                  <Link
                     key={n.id}
                     href={n.href}
                     onClick={() => {
@@ -139,7 +142,7 @@ export default function NotificationsMenu() {
                     className="block px-4 py-3 hover:bg-voro-ghost transition-colors border-b border-voro-muted-border last:border-0"
                   >
                     {content}
-                  </a>
+                  </Link>
                 ) : (
                   <div
                     key={n.id}
@@ -151,12 +154,12 @@ export default function NotificationsMenu() {
               })
             )}
           </div>
-          <a
+          <Link
             href="/support"
             className="block px-4 py-3 text-center text-xs font-semibold text-voro-purple hover:bg-voro-ghost transition-colors border-t border-voro-muted-border"
           >
             View all in Support
-          </a>
+          </Link>
         </div>
       )}
     </div>

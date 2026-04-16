@@ -120,9 +120,11 @@ export default function Sidebar() {
         <SidebarContent />
       </aside>
       <button
+        type="button"
         className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-xl bg-white border border-voro-muted-border shadow-soft flex items-center justify-center text-voro-indigo"
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close menu" : "Open menu"}
+        aria-controls="sidebar-nav"
       >
         {open ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -132,7 +134,7 @@ export default function Sidebar() {
             className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <aside className="relative z-50 w-64 h-full bg-white border-r border-voro-muted-border overflow-y-auto">
+          <aside id="sidebar-nav" className="relative z-50 w-64 h-full bg-white border-r border-voro-muted-border overflow-y-auto">
             <SidebarContent />
           </aside>
         </div>

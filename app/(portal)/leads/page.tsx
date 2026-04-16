@@ -73,7 +73,9 @@ function LeadsContent() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getLeads().then(setLeads);
+    getLeads()
+      .then(setLeads)
+      .catch(() => toast("Could not load leads. Try refreshing.", "error"));
   }, []);
 
   useEffect(() => {

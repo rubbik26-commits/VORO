@@ -20,7 +20,9 @@ export default function TeamsPage() {
   const [form, setForm] = useState<Member>({ name: "", role: "Team Member", notes: "" });
 
   useEffect(() => {
-    getAgent().then(setAgent);
+    getAgent()
+      .then(setAgent)
+      .catch(() => toast("Could not load team data. Try refreshing.", "error"));
   }, []);
 
   const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
@@ -116,8 +118,8 @@ export default function TeamsPage() {
             <div>
               <div className="text-sm font-semibold text-voro-jet">Suggested split model</div>
               <p className="text-xs text-voro-text-muted mt-1">
-                This is placeholder copy only. Work with brokerage leadership to define approved team split
-                structures before using this view operationally.
+                Team split structures are defined by your brokerage leadership. Contact your broker or visit
+                Support to discuss approved team compensation models.
               </p>
             </div>
           </div>
@@ -166,8 +168,8 @@ export default function TeamsPage() {
       <Card>
         <div className="section-title mb-1">Important Note</div>
         <div className="section-body">
-          All values on this page are mock data for UX and planning only. Work with brokerage leadership to define
-          your official team policies, reporting, and compensation structures.
+          Team metrics and member lists shown here are for tracking purposes. Work with brokerage leadership to
+          define your official team policies, reporting, and compensation structures.
         </div>
       </Card>
     </>

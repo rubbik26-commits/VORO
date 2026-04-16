@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { getMarketingAssets } from "@/lib/api";
+import { getMarketingAssets, createMarketingRequest } from "@/lib/api";
 import type { MarketingAsset } from "@/lib/types";
 import { track } from "@/lib/analytics";
 import Card from "@/components/ui/Card";
@@ -37,7 +37,9 @@ export default function MarketingPage() {
   const [requestSubmitting, setRequestSubmitting] = useState(false);
 
   useEffect(() => {
-    getMarketingAssets().then(setAssets);
+    getMarketingAssets()
+      .then(setAssets)
+      .catch(() => toast("Could not load marketing assets. Try refreshing.", "error"));
   }, []);
 
   const categories = useMemo(
@@ -208,20 +210,28 @@ export default function MarketingPage() {
       >
         <form
           id="custom-asset-form"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (!requestForm.details.trim()) {
               toast("Please describe what you need.", "error");
               return;
             }
             setRequestSubmitting(true);
-            setTimeout(() => {
-              setRequestSubmitting(false);
+            try {
+              await createMarketingRequest({
+                type: requestForm.type,
+                urgency: requestForm.urgency,
+                details: requestForm.details.trim(),
+              });
               track("marketing_custom_request", { type: requestForm.type, urgency: requestForm.urgency });
               toast(`Custom ${requestForm.type} request submitted. Marketing will follow up.`, "success");
               setRequestForm({ type: "Listing Flyer", details: "", urgency: "Standard" });
               setRequestModalOpen(false);
-            }, 500);
+            } catch {
+              toast("Could not submit request. Try again.", "error");
+            } finally {
+              setRequestSubmitting(false);
+            }
           }}
           className="flex flex-col gap-3"
         >

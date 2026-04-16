@@ -48,7 +48,8 @@ export default function ProfilePage() {
       setWebsiteVal(a.website);
       setLanguages([...a.languages]);
       setSpecialties([...a.specialties]);
-    });
+    })
+    .catch(() => toast("Could not load profile. Try refreshing.", "error"));
   }, []);
 
   if (!agent) return null;

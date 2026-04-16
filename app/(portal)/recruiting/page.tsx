@@ -15,7 +15,9 @@ export default function RecruitingPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getLeads().then(setAllLeads);
+    getLeads()
+      .then(setAllLeads)
+      .catch(() => toast("Could not load recruits. Try refreshing.", "error"));
   }, []);
 
   const recruitingLeads = useMemo(() => allLeads.filter((l) => l.type === "Recruit"), [allLeads]);
