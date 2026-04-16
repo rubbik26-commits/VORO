@@ -145,7 +145,7 @@ export default function SupportPage() {
               <button
                 key={t.id}
                 onClick={() => setSelectedTicket(t)}
-                className={`w-full text-left flex items-center justify-between gap-4 px-5 py-4 hover:bg-voro-ghost transition-colors ${
+                className={`w-full text-left flex items-center justify-between gap-4 px-5 py-4 hover:bg-voro-ghost hover:pl-6 transition-all ${
                   i < tickets.length - 1 ? "border-b border-voro-muted-border" : ""
                 }`}
               >

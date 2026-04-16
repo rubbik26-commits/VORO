@@ -173,9 +173,9 @@ function DocumentsContent() {
               {docs.map((d, i) => (
                 <div
                   key={d.id}
-                  className={`flex items-center justify-between gap-4 px-5 py-4 hover:bg-voro-ghost transition-colors ${
+                  className={`flex items-center justify-between gap-4 px-5 py-4 hover:bg-voro-ghost transition-all hover:pl-6 ${
                     i < docs.length - 1 ? "border-b border-voro-muted-border" : ""
-                  }`}
+                  } ${i % 2 === 1 ? "bg-voro-ghost/30" : ""}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-voro-soft-panel flex items-center justify-center shrink-0">

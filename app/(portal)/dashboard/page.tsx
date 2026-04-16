@@ -14,8 +14,23 @@ import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import AnnouncementsPanel from "@/components/dashboard/AnnouncementsPanel";
 import DeniedBanner from "@/components/dashboard/DeniedBanner";
+import KpiCard from "@/components/dashboard/KpiCard";
+import ProfileRing from "@/components/dashboard/ProfileRing";
+import VoroStats from "@/components/dashboard/VoroStats";
 import Link from "next/link";
-import { ArrowRight, FileText, HeartHandshake, Phone, Mail } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  HeartHandshake,
+  Phone,
+  Mail,
+  Send,
+  Shield,
+  Umbrella,
+  Upload,
+  Palette,
+  Headphones,
+} from "lucide-react";
 
 const statusVariant: Record<string, "default" | "warning" | "danger" | "success" | "neutral"> = {
   "Attorney Review": "default",
@@ -23,13 +38,14 @@ const statusVariant: Record<string, "default" | "warning" | "danger" | "success"
   "Documents Outstanding": "danger",
   "Clear to Close": "success",
 };
+
 const quickActions = [
-  { label: "Submit a Deal", href: "/transactions/new" },
-  { label: "Request Title Support", href: "/services" },
-  { label: "Insurance Quote", href: "/services" },
-  { label: "Upload Documents", href: "/documents" },
-  { label: "Open Brand Kit", href: "/marketing" },
-  { label: "Contact Support", href: "/support" },
+  { label: "Submit a Deal",         href: "/transactions/new", icon: Send },
+  { label: "Request Title Support", href: "/services",         icon: Shield },
+  { label: "Insurance Quote",       href: "/services",         icon: Umbrella },
+  { label: "Upload Documents",      href: "/documents",        icon: Upload },
+  { label: "Open Brand Kit",        href: "/marketing",        icon: Palette },
+  { label: "Contact Support",       href: "/support",          icon: Headphones },
 ];
 
 export default async function DashboardPage() {
@@ -47,7 +63,7 @@ export default async function DashboardPage() {
   return (
     <>
       <DeniedBanner />
-      <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-5 animate-fade-in">
         <div
           className="rounded-2xl p-5 md:p-7 text-white overflow-hidden relative"
           style={{ background: brandTokens.gradients.primary }}
@@ -71,20 +87,20 @@ export default async function DashboardPage() {
           <div className="flex flex-wrap gap-3 mt-6">
             <Link
               href="/transactions/new"
-              className="bg-white text-voro-indigo font-bold px-6 py-2.5 rounded-full text-sm hover:bg-voro-ghost transition-colors active:scale-[0.98]"
+              className="bg-white text-voro-indigo font-bold px-6 py-2.5 rounded-full text-sm hover:bg-voro-ghost transition-all active:scale-[0.97] hover:shadow-lg"
             >
               Submit a Deal
             </Link>
             <Link
               href="/support"
-              className="bg-white/10 text-white font-bold px-6 py-2.5 rounded-full text-sm border border-white/20 hover:bg-white/20 transition-colors active:scale-[0.98]"
+              className="bg-white/10 text-white font-bold px-6 py-2.5 rounded-full text-sm border border-white/20 hover:bg-white/20 transition-all active:scale-[0.97]"
             >
               Request Support
             </Link>
           </div>
         </div>
         <div className="flex flex-col gap-4">
-          <Card className="flex flex-col gap-3">
+          <Card variant="featured" className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-xs uppercase tracking-widest text-voro-text-muted font-semibold">
@@ -135,22 +151,8 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {kpis.map((k) => (
-          <Card key={k.id} className="flex flex-col gap-2">
-            <div className="text-xs font-semibold text-voro-text-muted">{k.label}</div>
-            <div className="text-3xl font-black tracking-tight text-voro-jet tabular-nums">{k.value}</div>
-            <div
-              className={`text-xs font-semibold ${
-                k.trend === "up"
-                  ? "text-voro-success"
-                  : k.trend === "down"
-                  ? "text-voro-danger"
-                  : "text-voro-purple"
-              }`}
-            >
-              {k.delta}
-            </div>
-          </Card>
+        {kpis.map((k, i) => (
+          <KpiCard key={k.id} kpi={k} index={i} />
         ))}
       </div>
 
@@ -158,15 +160,19 @@ export default async function DashboardPage() {
         <div className="section-title mb-1">What do you need to do today?</div>
         <div className="section-body mb-4">High-priority shortcuts to move business forward.</div>
         <div className="flex flex-wrap gap-2">
-          {quickActions.map((a) => (
-            <Link
-              key={a.label}
-              href={a.href}
-              className="border border-voro-muted-border rounded-full px-4 py-2 text-sm font-semibold text-voro-indigo hover:border-voro-purple hover:bg-voro-soft-panel transition-all hover:-translate-y-0.5 active:scale-[0.97]"
-            >
-              {a.label}
-            </Link>
-          ))}
+          {quickActions.map((a) => {
+            const Icon = a.icon;
+            return (
+              <Link
+                key={a.label}
+                href={a.href}
+                className="group border border-voro-muted-border rounded-full px-4 py-2 text-sm font-semibold text-voro-indigo hover:border-voro-purple hover:bg-voro-soft-panel transition-all hover:-translate-y-0.5 active:scale-[0.97] flex items-center gap-2"
+              >
+                <Icon size={14} className="text-voro-text-faint group-hover:text-voro-purple transition-colors" />
+                {a.label}
+              </Link>
+            );
+          })}
         </div>
       </Card>
 
@@ -200,10 +206,12 @@ export default async function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.slice(0, 4).map((t) => (
+                  {transactions.slice(0, 4).map((t, i) => (
                     <tr
                       key={t.id}
-                      className="border-b border-voro-muted-border last:border-0 hover:bg-voro-ghost transition-colors cursor-pointer"
+                      className={`border-b border-voro-muted-border last:border-0 hover:bg-voro-ghost transition-colors cursor-pointer ${
+                        i % 2 === 1 ? "bg-voro-ghost/40" : ""
+                      }`}
                     >
                       <td className="px-5 py-4">
                         <Link href={`/transactions/${t.id}`} className="block">
@@ -239,7 +247,7 @@ export default async function DashboardPage() {
               {services.map((s) => (
                 <div
                   key={s.id}
-                  className="rounded-xl border border-voro-muted-border bg-voro-ghost p-4 hover:border-voro-purple hover:shadow-soft transition-all group"
+                  className="rounded-xl border border-voro-muted-border bg-voro-ghost p-4 hover:border-voro-purple hover:shadow-soft transition-all group card-accent-left"
                 >
                   <div className="text-sm font-bold text-voro-jet group-hover:text-voro-purple transition-colors">
                     {s.title}
@@ -266,7 +274,7 @@ export default async function DashboardPage() {
               {documents.slice(0, 5).map((d) => (
                 <div
                   key={d.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-4 py-3 hover:border-voro-purple transition-all"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-4 py-3 hover:border-voro-purple hover:shadow-soft transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-voro-soft-panel flex items-center justify-center shrink-0">
@@ -300,7 +308,7 @@ export default async function DashboardPage() {
               {academy.slice(0, 3).map((a) => (
                 <div
                   key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-4 py-3"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-voro-muted-border px-4 py-3 hover:border-voro-purple transition-colors"
                 >
                   <div>
                     <div className="text-sm font-semibold text-voro-jet">{a.title}</div>
@@ -340,9 +348,11 @@ export default async function DashboardPage() {
             <div className="section-title mb-1">Profile</div>
             <div className="section-body mb-4">Bio, specialties, markets, readiness.</div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-accent flex items-center justify-center text-white text-xl font-black shrink-0 shadow-glow-sm">
-                {agent.firstName[0]}
-              </div>
+              <ProfileRing
+                value={agent.profileCompleteness}
+                initial={agent.firstName[0]}
+                size={56}
+              />
               <div>
                 <div className="text-base font-bold text-voro-jet">
                   {agent.firstName} {agent.lastName}
@@ -364,24 +374,7 @@ export default async function DashboardPage() {
           <div className="section-body mb-4">
             Company-wide performance that powers your business.
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Total sales volume</div>
-              <div className="text-lg font-black text-voro-jet tabular-nums">$10B+</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Commissions paid</div>
-              <div className="text-lg font-black text-voro-jet tabular-nums">$250M+</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Agents</div>
-              <div className="text-lg font-black text-voro-jet tabular-nums">1,000+</div>
-            </div>
-            <div className="rounded-xl bg-voro-ghost p-3">
-              <div className="text-voro-text-muted">Transactions closed</div>
-              <div className="text-lg font-black text-voro-jet tabular-nums">50,000+</div>
-            </div>
-          </div>
+          <VoroStats />
         </Card>
         <Card>
           <div className="section-title mb-1">Culture & community</div>

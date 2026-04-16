@@ -86,8 +86,8 @@ export default function AcademyPage() {
           { label: "Upcoming Live", value: upcoming.length.toString() },
           { label: "Completed", value: completedCount.toString() },
           { label: "Enrolled", value: enrolledCount.toString() },
-        ].map((k) => (
-          <Card key={k.label} className="flex flex-col gap-2">
+        ].map((k, i) => (
+          <Card key={k.label} variant="stat" className={`flex flex-col gap-2 animate-fade-in stagger-${i + 1}`}>
             <div className="text-xs font-semibold text-voro-text-muted">{k.label}</div>
             <div className="text-3xl font-black text-voro-jet tabular-nums">{k.value}</div>
           </Card>
@@ -178,12 +178,12 @@ export default function AcademyPage() {
               />
             </div>
           )}
-          {filteredCourses.map((a) => {
+          {filteredCourses.map((a, idx) => {
             const enrolled = enrolledIds.has(a.id);
             return (
               <div
                 key={a.id}
-                className={`rounded-xl border p-4 transition-all hover:shadow-soft ${
+                className={`rounded-xl border p-4 transition-all hover:shadow-lift animate-fade-in stagger-${Math.min(idx + 1, 8)} ${
                   a.completed
                     ? "border-green-100 bg-green-50/50"
                     : "border-voro-muted-border bg-white hover:border-voro-purple"

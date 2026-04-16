@@ -116,8 +116,8 @@ export default function ProfilePage() {
       />
       <div className="grid grid-cols-1 xl:grid-cols-[0.9fr_1.4fr] gap-6">
         <div className="flex flex-col gap-4">
-          <Card className="items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-gradient-accent flex items-center justify-center text-white text-4xl font-black shadow-glow-sm mx-auto mb-4">
+          <Card className="items-center text-center animate-fade-in">
+            <div className="w-24 h-24 rounded-full bg-gradient-accent flex items-center justify-center text-white text-4xl font-black shadow-glow mx-auto mb-4 ring-4 ring-white">
               {agent.firstName[0]}
             </div>
             <div className="text-xl font-black text-voro-jet">

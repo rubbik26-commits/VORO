@@ -69,10 +69,11 @@ export default function ServicesPage() {
         description="Request-based workflows designed to help you move deals faster."
       />
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {services.map((s) => (
+        {services.map((s, i) => (
           <Card
             key={s.id}
-            className="flex flex-col gap-4 hover:shadow-medium transition-all group hover:border-voro-purple"
+            variant="featured"
+            className={`flex flex-col gap-4 group animate-fade-in stagger-${Math.min(i + 1, 8)}`}
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-voro-soft-panel flex items-center justify-center shrink-0 group-hover:bg-purple-50 transition-colors">

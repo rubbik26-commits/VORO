@@ -10,7 +10,7 @@ export default function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 mb-2">
+    <div className="flex items-start justify-between gap-4 mb-2 animate-fade-in">
       <div>
         {eyebrow && (
           <span className="inline-flex items-center rounded-full border border-voro-muted-border bg-voro-soft-panel px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-voro-purple mb-2">
