@@ -40,7 +40,7 @@ Imagery rules:
 - Phone: `877-943-8676`
 - Email: `hello@voro.com`
 - Corporate office: `5550 Glades Rd, Suite 500, Boca Raton, FL 33431`
-- Office: `1129 Northern Blvd, Suite 404, Manhasset, NY 11030`
+- Office: `1129 Northern Blvd, Suite 422, Manhasset, NY 11030`
 
 ## Main navigation
 - Dashboard
