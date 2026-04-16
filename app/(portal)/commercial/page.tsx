@@ -3,11 +3,19 @@ import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
+import VoroCommercialLogo from "@/components/ui/VoroCommercialLogo";
 import { getServices, createCommercialRequest } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import type { Service } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
-import { Building2, Landmark, BriefcaseBusiness } from "lucide-react";
+import { Building2, Landmark, BriefcaseBusiness, TrendingUp, FileBarChart2, Handshake, Factory } from "lucide-react";
+
+const DEAL_TYPES = [
+  { icon: Building2,     label: "Office" },
+  { icon: Factory,       label: "Industrial" },
+  { icon: Handshake,     label: "Mixed-Use" },
+  { icon: FileBarChart2, label: "Investment" },
+];
 
 export default function CommercialPage() {
   const { toast } = useToast();
@@ -25,7 +33,10 @@ export default function CommercialPage() {
       .catch(() => toast("Could not load services. Try refreshing.", "error"));
   }, []);
 
-  const commercialServices = useMemo(() => allServices.filter((s) => s.category === "Commercial"), [allServices]);
+  const commercialServices = useMemo(
+    () => allServices.filter((s) => s.category === "Commercial"),
+    [allServices]
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,16 +63,84 @@ export default function CommercialPage() {
 
   return (
     <>
-      <PageHeader
-        title="Commercial Desk"
-        eyebrow="Optional Module"
-        description="Office, retail, industrial, and mixed-use deal support with dedicated commercial advisors."
-      />
+      {/* ── Hero Banner ──────────────────────────────────────────── */}
+      <div
+        className="relative rounded-2xl overflow-hidden mb-6 p-6 md:p-10 flex flex-col md:flex-row items-center gap-6"
+        style={{
+          background: "linear-gradient(135deg, #0e0c14 0%, #1a1228 50%, #0e0c14 100%)",
+          boxShadow: "0 24px 60px rgba(14,12,20,0.5)",
+        }}
+      >
+        {/* Gold radial glow */}
+        <div
+          className="absolute -top-20 -right-20 w-96 h-96 rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse, rgba(197,160,60,0.12) 0%, transparent 70%)",
+          }}
+        />
+        {/* Purple radial glow */}
+        <div
+          className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse, rgba(94,66,188,0.18) 0%, transparent 70%)",
+          }}
+        />
+        <div className="relative z-10 flex flex-col items-center md:items-start gap-4">
+          <VoroCommercialLogo width={300} />
+          <p className="text-sm text-white/70 max-w-md leading-relaxed text-center md:text-left">
+            Office, retail, industrial, and mixed-use deal support with dedicated
+            commercial advisors — cap rate analysis, OM review, investor scenarios,
+            and full transaction coordination.
+          </p>
+          <div className="flex flex-wrap gap-3 mt-1">
+            {DEAL_TYPES.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(197,160,60,0.25)",
+                  color: "#f5e27a",
+                }}
+              >
+                <Icon size={12} />
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="relative z-10 flex flex-col gap-3 text-center md:text-right ml-auto shrink-0">
+          <div
+            className="rounded-2xl px-6 py-4"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(197,160,60,0.2)" }}
+          >
+            <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#c9a84c" }}>
+              Pipeline
+            </div>
+            <div className="text-3xl font-black text-white tabular-nums mt-1">$186K</div>
+            <div className="text-xs text-white/50 mt-0.5">potential commission</div>
+          </div>
+          <div
+            className="rounded-2xl px-6 py-4"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(94,66,188,0.25)" }}
+          >
+            <div className="text-xs font-semibold uppercase tracking-widest text-voro-purple mt-0">
+              Active Files
+            </div>
+            <div className="text-3xl font-black text-white tabular-nums mt-1">4</div>
+            <div className="text-xs text-white/50 mt-0.5">in progress</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Pipeline + How It Helps ───────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-6">
         <Card>
           <div className="section-title mb-1">Active &amp; Upcoming Commercial Files</div>
           <div className="section-body mb-4">
-            High-level pipeline view for commercial opportunities you are touching.
+            High-level pipeline view for commercial opportunities in your book.
           </div>
           <div className="rounded-xl border border-voro-muted-border p-4 flex flex-col gap-3 bg-voro-ghost">
             <div className="flex items-center gap-3">
@@ -78,47 +157,54 @@ export default function CommercialPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-voro-text-muted mt-1">
-              <div>
-                <div className="font-semibold text-voro-jet">Stage</div>
-                <div>Clear to Close</div>
-              </div>
-              <div>
-                <div className="font-semibold text-voro-jet">Est. Commission</div>
-                <div>$61,000</div>
-              </div>
-              <div>
-                <div className="font-semibold text-voro-jet">Close Target</div>
-                <div>Apr 21, 2026</div>
-              </div>
-              <div>
-                <div className="font-semibold text-voro-jet">Point Person</div>
-                <div>You + Commercial Desk</div>
-              </div>
+              {[
+                { label: "Stage",           value: "Clear to Close" },
+                { label: "Est. Commission",  value: "$61,000" },
+                { label: "Close Target",     value: "Apr 21, 2026" },
+                { label: "Point Person",     value: "You + Commercial Desk" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div className="font-semibold text-voro-jet">{s.label}</div>
+                  <div>{s.value}</div>
+                </div>
+              ))}
             </div>
           </div>
           {commercialServices.length > 0 && (
             <div className="mt-4 rounded-xl border border-dashed border-voro-muted-border p-4 text-xs text-voro-text-muted flex items-start gap-2">
               <Landmark size={14} className="text-voro-purple mt-0.5" />
               <span>
-                Partnered with {commercialServices[0].title} &mdash; response {commercialServices[0].eta.toLowerCase()}.
+                Partnered with {commercialServices[0].title} — response{" "}
+                {commercialServices[0].eta.toLowerCase()}.
               </span>
             </div>
           )}
         </Card>
+
         <Card>
           <div className="section-title mb-1">How Commercial Desk Helps</div>
           <div className="section-body mb-4">
-            Use this desk for any non-residential opportunity &mdash; office, retail, mixed-use, industrial, development.
+            Use this desk for any non-residential opportunity — office, retail,
+            mixed-use, industrial, development.
           </div>
-          <ul className="text-sm text-voro-text-muted flex flex-col gap-2">
-            <li>• Deal strategy, underwriting, and pricing guidance.</li>
-            <li>• Offering memorandum review and creation support.</li>
-            <li>• Cap rate and NOI analysis plus investor scenarios.</li>
-            <li>• Help identifying qualified buyers, tenants, and capital.</li>
-            <li>• Coordination with attorneys, lenders, and title.</li>
+          <ul className="text-sm text-voro-text-muted flex flex-col gap-2.5">
+            {[
+              "Deal strategy, underwriting, and pricing guidance.",
+              "Offering memorandum review and creation support.",
+              "Cap rate and NOI analysis plus investor scenarios.",
+              "Help identifying qualified buyers, tenants, and capital.",
+              "Coordination with attorneys, lenders, and title.",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2">
+                <TrendingUp size={13} className="text-voro-purple mt-0.5 shrink-0" />
+                {item}
+              </li>
+            ))}
           </ul>
         </Card>
       </div>
+
+      {/* ── Request Form ─────────────────────────────────────────── */}
       <Card>
         <div className="section-title mb-1">Request Commercial Support</div>
         <div className="section-body mb-4">
@@ -193,15 +279,19 @@ export default function CommercialPage() {
           </div>
         </form>
       </Card>
+
+      {/* ── Pipeline Snapshot ────────────────────────────────────── */}
       <Card>
         <div className="section-title mb-1">Pipeline Snapshot</div>
-        <div className="section-body mb-4">Quick view of commercial activity across your book of business.</div>
+        <div className="section-body mb-4">
+          Quick view of commercial activity across your book of business.
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
           {[
-            { label: "Active commercial files", value: "4" },
+            { label: "Active commercial files",   value: "4" },
             { label: "Total potential commission", value: "$186,000" },
-            { label: "Under LOI", value: "2" },
-            { label: "Closed last 12 months", value: "3" },
+            { label: "Under LOI",                  value: "2" },
+            { label: "Closed last 12 months",      value: "3" },
           ].map((s, i) => (
             <Card key={s.label} variant="stat" className={`flex flex-col gap-1 animate-fade-in stagger-${i + 1}`}>
               <div className="text-voro-text-muted">{s.label}</div>
