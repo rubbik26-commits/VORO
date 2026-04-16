@@ -14,6 +14,7 @@ import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import AnnouncementsPanel from "@/components/dashboard/AnnouncementsPanel";
 import DeniedBanner from "@/components/dashboard/DeniedBanner";
+import VoroLogo from "@/components/ui/VoroLogo";
 import KpiCard from "@/components/dashboard/KpiCard";
 import ProfileRing from "@/components/dashboard/ProfileRing";
 import VoroStats from "@/components/dashboard/VoroStats";
@@ -72,6 +73,9 @@ export default async function DashboardPage() {
             className="absolute -top-16 -right-16 w-72 h-72 rounded-full pointer-events-none"
             style={{ background: brandTokens.gradients.glow }}
           />
+          <div className="mb-4">
+            <VoroLogo width={120} mono />
+          </div>
           <span className="inline-flex border border-white/20 bg-white/10 rounded-full px-3 py-1 text-xs font-semibold tracking-widest text-white/80 uppercase">
             Real Estate Cloud Broker
           </span>

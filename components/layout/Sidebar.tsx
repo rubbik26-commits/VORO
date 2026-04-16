@@ -94,13 +94,10 @@ export default function Sidebar() {
         }}
       />
       <div className="relative z-10 flex flex-col h-full">
-        <div className="flex items-center gap-3 px-2 mb-6">
-          <div className="animate-pulse-glow rounded-[12px]">
-            <VoroLogo size={38} />
-          </div>
-          <div>
-            <div className="text-sm font-black tracking-tight text-voro-jet">VORO</div>
-            <div className="text-xs text-voro-text-muted">Agent Portal</div>
+        <div className="flex flex-col gap-1 px-2 mb-6">
+          <VoroLogo width={110} />
+          <div className="text-[10px] font-bold uppercase tracking-widest text-voro-text-muted mt-0.5">
+            Agent Portal
           </div>
         </div>
         <nav aria-label="Main navigation" className="flex flex-col gap-1 flex-1">
